@@ -1,0 +1,29 @@
+{
+  "task": "refresh-repo-docs-current-state",
+  "repo": "/Users/apex/Desktop/MacOptimizervn",
+  "mode": "docs-only",
+  "tasks": [
+    {
+      "id": "docs-audit",
+      "summary": "Rà README và changelog hiện có để xác định nội dung cũ, sai hoặc không còn khớp với mã nguồn hiện tại."
+    },
+    {
+      "id": "docs-update",
+      "summary": "Cập nhật README theo trạng thái hiện tại của app: Việt hóa, menu bar monitoring, GPU metric, tooltip, chế độ menu bar utility và build artifact."
+    },
+    {
+      "id": "docs-images",
+      "summary": "Thêm ảnh minh họa sẵn có trong repo vào README hoặc tài liệu phù hợp."
+    },
+    {
+      "id": "docs-verify",
+      "summary": "Kiểm tra lại markdown đã sửa, bảo đảm không chạm code và không mô tả sai trạng thái hiện tại."
+    }
+  ],
+  "acceptance": [
+    "Chỉ sửa file markdown hoặc tài liệu liên quan.",
+    "README phản ánh đúng build artifact hiện tại và tính năng menu bar monitoring.",
+    "Ảnh minh họa dùng file có sẵn trong repo.",
+    "Không tuyên bố các hành vi runtime không được mã nguồn hiện tại xác nhận."
+  ]
+}

@@ -1,363 +1,232 @@
+<div align="center">
+  <img src="AppUninstaller/welcome.png" alt="MacOptimizer Hero" width="180" />
+
+  # MacOptimizer
+
+  **Bộ công cụ dọn dẹp, tối ưu và giám sát macOS với giao diện tiếng Việt**
+
+  <p>
+    <img src="https://img.shields.io/badge/macOS-13%2B-111827?style=for-the-badge&logo=apple&logoColor=white" alt="macOS 13+">
+    <img src="https://img.shields.io/badge/Swift-5.9-F97316?style=for-the-badge&logo=swift&logoColor=white" alt="Swift 5.9">
+    <img src="https://img.shields.io/badge/Version-4.0.6-2563EB?style=for-the-badge" alt="Version 4.0.6">
+    <img src="https://img.shields.io/badge/UI-Ti%E1%BA%BFng%20Vi%E1%BB%87t-059669?style=for-the-badge" alt="Vietnamese UI">
+    <img src="https://img.shields.io/badge/Menu%20Bar-GPU%20%2F%20CPU%20%2F%20DISK%20%2F%20RAM-7C3AED?style=for-the-badge" alt="Menu bar metrics">
+  </p>
+</div>
+
+---
+
+## Tổng quan
+
+MacOptimizer là app macOS viết bằng SwiftUI, tập trung vào ba nhóm việc chính:
+
+- dọn dẹp rác hệ thống, cache, log và file lớn,
+- gỡ cài đặt app kèm file liên quan,
+- giám sát máy trực tiếp từ menu bar với metric thời gian thực.
+
+Trạng thái repo hiện tại phản ánh các thay đổi gần đây:
+
+- giao diện chính và các luồng menu bar/monitor đã được Việt hóa diện rộng,
+- status item trên menu bar đã hỗ trợ `GPU`, `CPU`, `DISK`, `RAM`, `Mạng`, `Pin`,
+- tooltip và trang tùy biến status item đã có sẵn,
+- app khởi động ẩn theo kiểu menu bar utility và có thể mở cửa sổ chính khi cần,
+- script build nội bộ đã xuất được `.app` và `.dmg`.
+
+Ghi chú: repo vẫn giữ checklist sweep cuối cho việc chuẩn hóa nốt text runtime còn sót trong source ở [contracts/vietnamese-only-sweep-checklist.md](contracts/vietnamese-only-sweep-checklist.md).
+
+---
+
+## Trạng thái hiện tại
+
+### Menu bar monitoring
+
+- App khởi động ở chế độ accessory utility và ẩn cửa sổ chính khi mở lần đầu.
+- Status item hỗ trợ hiển thị động theo lựa chọn người dùng, không còn là text cố định.
+- Có thể bật hoặc tắt từng metric `GPU`, `CPU`, `DISK`, `RAM`, `Mạng`, `Pin`.
+- Có thể hiện hoặc ẩn icon app trên status item.
+- Tooltip được dùng để giải thích metric và trạng thái hiện tại.
+- Trang tùy biến riêng cho menu bar đã có trong nút gear của popup menu bar.
+- Detail `CPU` và `RAM` vẫn giữ luồng force-quit nhanh.
+
+### Giám sát hệ thống
+
+- `GPU` đã được đưa vào pipeline đo đạc và hiển thị trên status item.
+- `CPU`, `RAM`, `DISK`, `Mạng`, `Pin` được cập nhật theo cadence riêng.
+- Hệ thống sampling profile và interval tùy biến đã có cho menu bar monitoring.
+
+### Build và đóng gói
+
+- `./build.sh` tạo app bundle cục bộ tại `build/MacOptimizer.app` và DMG tại `build/MacOptimizer.dmg`.
+- `./build_dual_dmg.sh` tạo gói phát hành hai kiến trúc:
+  - `build_release/MacOptimizer_v4.0.6_AppleSilicon.dmg`
+  - `build_release/MacOptimizer_v4.0.6_Intel.dmg`
+
+---
+
+## Ảnh giao diện
+
+### Menu bar và dashboard
+
 <p align="center">
-  <img src="generated_icon.png" width="128" height="128" alt="MacOptimizer Logo">
+  <img src="AppUninstaller/system_clean_menu.png" alt="Menu bar monitoring" width="31%" />
+  <img src="AppUninstaller/yibiaopan_2026.png" alt="Dashboard monitoring" width="31%" />
+  <img src="AppUninstaller/yinpan_2026.png" alt="Disk cleanup module" width="31%" />
 </p>
 
-<h1 align="center">MacOptimizer</h1>
+### Dọn dẹp và tối ưu
 
 <p align="center">
-  <strong>🚀 A Powerful macOS System Optimization and App Management Tool</strong>
+  <img src="AppUninstaller/smart-scan.2f4ddf59.png" alt="Smart Scan" width="31%" />
+  <img src="AppUninstaller/shenduqingli.png" alt="Deep Clean" width="31%" />
+  <img src="AppUninstaller/youhua.png" alt="Optimizer" width="31%" />
 </p>
 
+### Quyền riêng tư và bảo vệ
+
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS%2013.0+-blue.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift">
-  <img src="https://img.shields.io/badge/SwiftUI-4.0-purple.svg" alt="SwiftUI">
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/version-2.2.0-brightgreen.svg" alt="Version">
-  <img src="https://img.shields.io/badge/i18n-EN%20%7C%20VI-cyan.svg" alt="i18n">
+  <img src="AppUninstaller/yinsi.png" alt="Privacy" width="31%" />
+  <img src="AppUninstaller/zhiwendunpai_2026.png" alt="Protection" width="31%" />
+  <img src="AppUninstaller/malware@2x.png" alt="Malware scan" width="31%" />
+</p>
+
+### Công cụ quản lý ứng dụng
+
+<p align="center">
+  <img src="AppUninstaller/Uninstaller@2x.jpg" alt="Uninstaller" width="31%" />
+  <img src="AppUninstaller/clean-up.866fafd0.png" alt="Cleanup results" width="31%" />
+  <img src="AppUninstaller/welcome.png" alt="Welcome screen" width="31%" />
 </p>
 
 ---
 
-## ✨ Features
+## Tính năng chính
 
-MacOptimizer is a system optimization tool designed specifically for macOS, featuring a modern SwiftUI interface with eight core functional modules:
+### Menu bar utility
 
-### 🌐 Multi-Language Support (New!)
-- **Vietnamese & English** - Switch between languages with one click
-- **Persistent Settings** - Language preference is saved automatically
-- **Full Coverage** - All UI elements support localization
+| Hạng mục | Trạng thái hiện tại |
+| --- | --- |
+| Metric hỗ trợ | `GPU`, `CPU`, `DISK`, `RAM`, `Mạng`, `Pin` |
+| Kiểu hiển thị | Status item động, có thể kèm icon app |
+| Tooltip | Có ở status item và UI tùy biến |
+| Tùy biến | Bật/tắt metric, sắp thứ tự, preset, sampling profile |
+| Force quit | Có trong detail `CPU` và `RAM` |
+| Khởi động ẩn | Có, app chạy kiểu accessory utility |
 
-### 🖥️ Console (System Monitor)
-- **CPU Usage** - Real-time CPU usage monitoring
-- **Memory Status** - Display used/available memory
-- **Disk Space** - Visual disk usage percentage
-- **Process Management** - View and manage running apps and background processes
-- **One-Click Stop** - Quickly terminate unwanted processes
+### Bộ công cụ dọn dẹp và tối ưu
 
-### 📦 App Uninstaller
-- **Smart Scanning** - Automatically detect installed applications
-- **Residual File Detection** - Find all associated residual files:
-  - Preferences
-  - Application Support
-  - Caches
-  - Logs
-  - Saved State
-  - Containers
-  - Launch Agents
-  - Crash Reports
-- **Complete Uninstall** - Remove app and all related files with one click
-- **Selective Deletion** - Choose to delete only residuals or include the app
-- **Move to Trash** - Safe deletion with recovery option
+| Module | Mục đích |
+| --- | --- |
+| Smart Clean | Quét nhanh các nhóm dữ liệu thường cần dọn |
+| Deep Clean | Rà sâu hơn các file dư thừa và nhóm file lớn |
+| Junk Cleaner | Dọn cache, log và file rác hệ thống |
+| Large Files | Tìm file lớn, file cũ, file tốn dung lượng |
+| Trash | Xem và làm trống Thùng rác |
+| File Explorer | Duyệt file hệ thống và thao tác nhanh |
+| Optimizer | Tối ưu trạng thái hệ thống và mục khởi động |
+| Privacy | Dọn dữ liệu riêng tư trình duyệt và hệ thống |
+| Malware | Quét dấu hiệu rủi ro cơ bản |
+| App Updater | Kiểm tra cập nhật ứng dụng |
+| Uninstaller | Gỡ app kèm file liên quan |
 
-### 🧹 Junk Cleaner
-- **System Cache** - Clean macOS system cache
-- **App Cache** - Clean cache files from various applications
-- **Browser Cache** - Support Safari, Chrome, Firefox, and more
-- **Log Files** - Clean system and app logs
-- **Categorized Display** - Group by type, support selective cleaning
+### Gỡ cài đặt ứng dụng
 
-### ⚡ System Optimizer
-- **Startup Items** - View and disable startup items
-- **Memory Release** - One-click system memory cleanup
-- **System Acceleration** - Optimize system performance
-
-### 🔍 Large File Finder
-- **Smart Scanning** - Quickly locate space-consuming files
-- **Multi-Directory Scan** - Scan all files in home directory
-- **Visual Display** - Clear file size and location display
-- **Quick Cleanup** - Direct delete or move to trash
-
-### 🗑️ Trash Manager
-- **View Contents** - Browse all files in trash
-- **Space Statistics** - Show trash space usage
-- **One-Click Empty** - Quickly empty trash to free space
-
-### ✨ Deep Clean
-- **Orphaned File Scan** - Scan residual files from uninstalled apps
-- **Smart Recognition** - Auto-identify files not belonging to installed apps
-- **System Protection** - Auto-exclude Apple system files to prevent accidental deletion
-- **Categorized Display** - Group by type: App Support, Cache, Preferences, Containers, Logs
-- **Selective Cleanup** - Support select all/none, freely choose items to clean
-- **Safe Deletion** - Files move to trash for recovery
-
-### 📁 File Explorer
-- **Disk Browsing** - Browse entire Mac disk directory structure
-- **Quick Access** - Home, Desktop, Documents, Downloads, Applications, Disk Root
-- **Navigation** - Forward/Back/Parent + Breadcrumb path bar
-- **Path Input** - Manual path input for quick navigation (supports `~`)
-- **File Operations** - New folder, new file, rename, delete
-- **Hidden Files** - Toggle show/hide system hidden files
-- **Terminal Integration** - One-click open current directory in Terminal
-- **Context Menu** - Open, Show in Finder, Rename, Delete
+- quét app đã cài,
+- hiển thị file liên quan như `Preferences`, `Caches`, `Logs`, `Application Support`,
+- gỡ bỏ có chọn lọc,
+- ưu tiên đưa vào Thùng rác để an toàn hơn.
 
 ---
 
-## 📸 Screenshots
+## Build từ source
 
-![alt text](image.png)
-![alt text](image-15.png)
-![alt text](image-16.png)
-![alt text](image-1.png)
+### Yêu cầu
 
-![alt text](image-2.png)
+- macOS 13 trở lên
+- Swift 5.9
+- Xcode hoặc Command Line Tools phù hợp
 
-![alt text](image-3.png)
-![alt text](image-4.png)
-![alt text](image-5.png)
-![alt text](image-6.png)
-![alt text](image-7.png)
-![alt text](image-8.png)
-![alt text](image-9.png)
-![alt text](image-10.png)
-![alt text](image-11.png)
-![alt text](image-12.png)
-![alt text](image-13.png)
-![alt text](image-14.png)
+### Build nhanh
 
----
-
-## 🛠️ Installation & Build
-
-### System Requirements
-- **macOS 13.0 (Ventura)** or later
-- **Apple Silicon (M1/M2/M3/M4)** or Intel (modify build parameters)
-- **Command Line Tools** (Full Xcode not required)
-
-### Download DMG
-
-Download the latest release from [GitHub Releases](https://github.com/apexdev/MacOptimizer/releases):
-- **Apple Silicon (M1/M2/M3/M4)**: `MacOptimizer_vX.X.X_AppleSilicon.dmg`
-- **Intel**: `MacOptimizer_vX.X.X_Intel.dmg`
-
-### Build from Source
 ```bash
-# 1. Clone repository
-git clone https://github.com/apexdev/MacOptimizer.git
-cd MacOptimizer
-
-# 2. Run build script
-chmod +x build.sh
+git clone git@github.com:TGalioAutomation/MacOptimizervn.git
+cd MacOptimizervn
 ./build.sh
+```
 
-# 3. Launch app
+Artifact sau build:
+
+- `build/MacOptimizer.app`
+- `build/MacOptimizer.dmg`
+
+Chạy app trực tiếp:
+
+```bash
 open build/MacOptimizer.app
 ```
 
-### Intel Support
-
-For Intel Mac, modify `build.sh`:
+### Build gói phát hành hai kiến trúc
 
 ```bash
-# Change
--target arm64-apple-macos13.0
-# To
--target x86_64-apple-macos13.0
+./build_dual_dmg.sh
+```
+
+Artifact sau build:
+
+- `build_release/MacOptimizer_v4.0.6_AppleSilicon.dmg`
+- `build_release/MacOptimizer_v4.0.6_Intel.dmg`
+
+### Build kiểm tra package
+
+```bash
+swift build
 ```
 
 ---
 
-## 📁 Project Structure
+## Cấu trúc repo
 
-```
-MacOptimizer/
-├── AppUninstaller/              # Source code
-│   ├── AppUninstallerApp.swift  # App entry
-│   ├── ContentView.swift        # Main view
-│   ├── NavigationSidebar.swift  # Sidebar navigation
-│   ├── LocalizationManager.swift # i18n manager (New!)
-│   ├── Models.swift             # Data models
-│   ├── Styles.swift             # Global styles
-│   │
-│   ├── MonitorView.swift        # Console view
+```text
+MacOptimizervn/
+├── AppUninstaller/             # Source app macOS
+│   ├── AppDelegate.swift       # Khởi động accessory utility và menu bar
+│   ├── AppUninstallerApp.swift
+│   ├── ContentView.swift
+│   ├── MenuBar/                # Menu bar popup, detail, customization
 │   ├── SystemMonitorService.swift
-│   ├── ProcessService.swift
-│   │
-│   ├── AppScanner.swift         # App scanner
-│   ├── AppDetailView.swift      # App detail view
-│   ├── ResidualFileScanner.swift
-│   ├── FileRemover.swift
-│   │
-│   ├── JunkCleaner.swift        # Junk cleaner
-│   ├── JunkCleanerView.swift
-│   │
-│   ├── SystemOptimizer.swift    # System optimizer
-│   ├── OptimizerView.swift
-│   │
-│   ├── LargeFileScanner.swift   # Large file scanner
-│   ├── LargeFileView.swift
-│   │
-│   ├── TrashView.swift          # Trash view
-│   ├── DiskSpaceManager.swift
-│   ├── DiskUsageView.swift
-│   │
-│   ├── DeepCleanScanner.swift   # Deep clean
-│   ├── DeepCleanView.swift
-│   │
-│   ├── FileExplorerService.swift # File explorer
-│   ├── FileExplorerView.swift
-│   │
-│   ├── Info.plist
-│   └── AppIcon.icns
-│
-├── build.sh                     # Build script
-├── release_package.sh           # Release packaging
+│   ├── SmartCleanerService.swift
+│   ├── PrivacyScannerService.swift
+│   ├── MalwareScanner.swift
+│   └── ...
+├── contracts/                  # Contract và checklist công việc
+├── build.sh                    # Build cục bộ + DMG
+├── build_dual_dmg.sh           # DMG Apple Silicon + Intel
+├── CHANGELOG_v4.0.6.md         # Ghi nhận trạng thái hiện tại
 └── README.md
 ```
 
 ---
 
-## 🔧 Tech Stack
+## Tài liệu liên quan
 
-- **Language**: Swift 5.9
-- **UI Framework**: SwiftUI 4.0
-- **Minimum Support**: macOS 13.0 (Ventura)
-- **Architecture**: MVVM
-- **Build Tool**: Swift Compiler (swiftc)
-
----
-
-## 🚀 Roadmap
-
-- [x] Multi-language support (English/Vietnamese)
-- [ ] Scheduled cleanup tasks
-- [ ] Menu bar widget
-- [ ] App update detection
-- [ ] Duplicate file finder
-- [ ] Privacy protection (browsing history cleanup)
+- [CHANGELOG_v4.0.6.md](CHANGELOG_v4.0.6.md)
+- [CHANGELOG_v4.0.3.md](CHANGELOG_v4.0.3.md)
+- [CHANGELOG_v4.0.2.md](CHANGELOG_v4.0.2.md)
+- [CHANGELOG_v4.0.1.md](CHANGELOG_v4.0.1.md)
+- [CHANGELOG_v4.0.0.md](CHANGELOG_v4.0.0.md)
+- [contracts/vietnamese-only-sweep-checklist.md](contracts/vietnamese-only-sweep-checklist.md)
 
 ---
 
-## 🤝 Contributing
+## Ghi chú vận hành
 
-Contributions are welcome! Submit a Pull Request or create an Issue.
-
-1. Fork this repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Create Pull Request
+- App hiện được tối ưu cho trải nghiệm menu bar trước, nhưng vẫn có cửa sổ chính cho các luồng dọn dẹp và quản trị chi tiết.
+- `GPU` usage phụ thuộc dữ liệu hệ thống macOS; mức chi tiết có thể khác giữa các máy.
+- Với các thao tác dọn dẹp nhạy cảm, nên rà soát danh sách file trước khi xóa hàng loạt và ưu tiên đưa vào Thùng rác nếu có thể.
+- Nên sao lưu dữ liệu quan trọng trước khi dùng các tính năng dọn dẹp sâu trên máy làm việc chính.
 
 ---
 
-## 📄 License
-
-This project is open source under the [MIT License](LICENSE).
-
----
-
-## ⚠️ Disclaimer
-
-- Back up important data before use
-- Deleting system files may cause apps to malfunction
-- Recommend using "Move to Trash" first, then empty after confirming
-- This tool is for learning and personal use only
-
----
-
-<p align="center">
-  Visit website: <a href="https://apexdev.website">https://apexdev.website</a>
-</p>
-
----
-
-# Hướng dẫn Tiếng Việt
-
-## ✨ Tính năng
-
-MacOptimizer là một công cụ tối ưu hóa hệ thống được thiết kế dành riêng cho macOS, với giao diện SwiftUI hiện đại, cung cấp 8 tính năng cốt lõi:
-
-### 🌐 Hỗ trợ đa ngôn ngữ (Tính năng mới!)
-- **Song ngữ Việt - Anh** - Chuyển đổi ngôn ngữ giao diện dễ dàng
-- **Lưu cài đặt** - Tự động lưu lựa chọn ngôn ngữ
-- **Hỗ trợ toàn diện** - Mọi thành phần giao diện đều được bản địa hóa
-
-### 🖥️ Điều khiển (Giám sát hệ thống)
-- **Mức sử dụng CPU** - Giám sát CPU theo thời gian thực
-- **Trạng thái bộ nhớ** - Hiển thị dung lượng đã dùng/khả dụng
-- **Dung lượng ổ đĩa** - Hiển thị đồ họa trực quan mức sử dụng ổ đĩa
-- **Quản lý tiến trình** - Xem và quản lý các ứng dụng, tiến trình chạy ngầm
-- **Dừng tiến trình** - Ghi đè, tắt ứng dụng không mong muốn nhanh chóng
-
-### 📦 Gỡ cài đặt ứng dụng
-- **Quét thông minh** - Tự động phát hiện các ứng dụng đã cài đặt
-- **Phát hiện tệp tin rác** - Tìm tất cả tệp tin rác liên quan như:
-  - Tùy chọn (Preferences)
-  - Hỗ trợ ứng dụng (Application Support)
-  - Bộ nhớ đệm (Caches)
-  - Nhật ký (Logs)
-  - Trạng thái đã lưu (Saved State)
-  - Vùng chứa (Containers)
-  - Quản lý Khởi động (Launch Agents)
-  - Báo cáo sự cố (Crash Reports)
-- **Gỡ bỏ hoàn toàn** - Xóa ứng dụng và tất cả tệp tin liên quan
-- **Xóa có chọn lọc** - Chỉ xóa rác hoặc xóa cả ứng dụng
-- **Chuyển vào Thùng rác** - Khôi phục dễ dàng
-
-### 🧹 Dọn dẹp rác
-- **Bộ đệm hệ thống** - Dọn sạch cache macOS
-- **Bộ đệm ứng dụng** - Dọn sạch cache do ứng dụng sinh ra
-- **Bộ đệm trình duyệt** - Hỗ trợ Safari, Chrome, Firefox, v.v.
-- **Tệp nhật ký** - Làm sạch nhật ký hệ thống
-- **Phân loại hiển thị** - Phân nhóm và xóa chọn lọc
-
-### ⚡ Tối ưu hệ thống
-- **Mục khởi động** - Quản lý, tắt ứng dụng khởi động cùng máy
-- **Giải phóng bộ nhớ** - Dọn RAM bằng một cú nhấp chuột
-- **Tăng tốc hệ thống** - Tối ưu hóa hiệu năng
-
-### 🔍 Tìm tệp lớn
-- **Quét thông minh** - Tìm ngay file tốn dung lượng
-- **Quét đa thư mục** - Quét tất cả file trong Home
-- **Giao diện trực quan** - Xem tên và dung lượng rõ ràng
-- **Dọn dẹp nhanh** - Xóa trực tiếp hoặc chuyển vào thùng rác
-
-### 🗑️ Quản lý thùng rác
-- **Xem nội dung** - Trực tiếp duyệt các file trong thùng rác
-- **Thống kê dung lượng** - Hiển thị tổng dung lượng các file
-- **Làm trống** - Giải phóng dung lượng ổ cứng ngay
-
-### ✨ Dọn dẹp sâu
-- **Tệp mồ côi** - Quét tệp dư thừa từ app đã bị xóa
-- **Cảnh báo thông minh** - Loại trừ tệp hệ thống Apple
-- **Xóa có chọn lọc** - Lựa chọn an toàn các rác cần xóa
-
-### 📁 Quản lý tệp
-- **Duyệt ổ đĩa** - Truy cập cấu trúc thư mục của Mac
-- **Truy cập nhanh** - Điều hướng dễ dàng tới Tải xuống, Desktop, v.v.
-- **Tương tác Terminal** - Mở ngay Terminal ở đường dẫn hiện tại
-- **Các tác vụ khác** - Mở thẻ Finder, Hiện tệp ẩn, v.v.
-
----
-
-## 🛠️ Cài đặt & Build
-
-### Yêu cầu hệ thống
-- **macOS 13.0 (Ventura)** trở lên
-- **Apple Silicon** hoặc Intel
-
-### Cài đặt qua Homebrew
-
-```bash
-# Sử dụng Homebrew Cask
-brew tap apexdev/macoptimizer
-brew install --cask macoptimizer
-```
-
-Hoặc cài trực tiếp từ file:
-```bash
-brew install --cask ./homebrew/macoptimizer.rb
-```
-
-### Tải bản DMG
-[GitHub Releases](https://github.com/apexdev/MacOptimizer/releases):
-- **Apple Silicon (M1/M2/M3/M4)**: `MacOptimizer_vX.X.X_AppleSilicon.dmg`
-- **Intel**: `MacOptimizer_vX.X.X_Intel.dmg`
-
----
-
-Truy cập website của chúng tôi tại: https://apexdev.website
-
-<p align="center">
-  Made with ❤️ for macOS
-</p>
+<div align="center">
+  <strong>MacOptimizer</strong><br/>
+  Gọn, nhanh, theo dõi trực tiếp từ menu bar.
+</div>
