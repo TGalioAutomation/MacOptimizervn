@@ -1,0 +1,73 @@
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:208:35: error: cannot find type 'DetectedThreat' in scope
+ 206 |     
+ 207 |     // 新增智能扫描结果
+ 208 |     @Published var virusThreats: [DetectedThreat] = []
+     |                                   `- error: cannot find type 'DetectedThreat' in scope
+ 209 |     @Published var startupItems: [LaunchItem] = []
+ 210 |     @Published var performanceApps: [RunningAppItem] = []
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:209:35: error: cannot find type 'LaunchItem' in scope
+ 207 |     // 新增智能扫描结果
+ 208 |     @Published var virusThreats: [DetectedThreat] = []
+ 209 |     @Published var startupItems: [LaunchItem] = []
+     |                                   `- error: cannot find type 'LaunchItem' in scope
+ 210 |     @Published var performanceApps: [RunningAppItem] = []
+ 211 |     @Published var hasAppUpdates: Bool = false
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:210:38: error: cannot find type 'RunningAppItem' in scope
+ 208 |     @Published var virusThreats: [DetectedThreat] = []
+ 209 |     @Published var startupItems: [LaunchItem] = []
+ 210 |     @Published var performanceApps: [RunningAppItem] = []
+     |                                      `- error: cannot find type 'RunningAppItem' in scope
+ 211 |     @Published var hasAppUpdates: Bool = false
+ 212 |     
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:214:34: error: cannot find 'MalwareScanner' in scope
+ 212 |     
+ 213 |     // 子服务实例
+ 214 |     private let malwareScanner = MalwareScanner()
+     |                                  `- error: cannot find 'MalwareScanner' in scope
+ 215 |     private let systemOptimizer = SystemOptimizer()
+ 216 |     private let updateChecker = UpdateCheckerService.shared
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:215:35: error: cannot find 'SystemOptimizer' in scope
+ 213 |     // 子服务实例
+ 214 |     private let malwareScanner = MalwareScanner()
+ 215 |     private let systemOptimizer = SystemOptimizer()
+     |                                   `- error: cannot find 'SystemOptimizer' in scope
+ 216 |     private let updateChecker = UpdateCheckerService.shared
+ 217 |     
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:216:33: error: cannot find 'UpdateCheckerService' in scope
+ 214 |     private let malwareScanner = MalwareScanner()
+ 215 |     private let systemOptimizer = SystemOptimizer()
+ 216 |     private let updateChecker = UpdateCheckerService.shared
+     |                                 `- error: cannot find 'UpdateCheckerService' in scope
+ 217 |     
+ 218 |     @Published var isScanning = false
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:2688:36: error: cannot find type 'LaunchItem' in scope
+2686 |     }
+2687 |     
+2688 |     func toggleStartupItem(_ item: LaunchItem) async {
+     |                                    `- error: cannot find type 'LaunchItem' in scope
+2689 |         if await systemOptimizer.toggleAgent(item) {
+2690 |             await MainActor.run {
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:616:16: warning: value 'dartDir' was defined but never used; consider replacing with boolean test [#no-usage]
+ 614 |         // 这是系统及应用存放临时文件和缓存的主要位置
+ 615 |         // 结构通常是: /var/folders/xx/yyyyy/C (Cache) 和 T (Temp)
+ 616 |         if let dartDir = try? fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+     |                `- warning: value 'dartDir' was defined but never used; consider replacing with boolean test [#no-usage]
+ 617 |              // 这里的 dartDir 通常指向 ~/Library/Caches
+ 618 |              // 我们需要找到 /var/folders 目录。可以通过 NSTemporaryDirectory() 获取线索
+
+/Users/dudianlong/tool/mac应用程序卸载/AppUninstaller/SmartCleanerService.swift:1345:37: warning: 'components(fromIdentifier:)' was deprecated in macOS 13: Use `Locale.Components(identifier:)` to access components [#DeprecatedDeclaration]
+1343 |             // lang 格式可能是 "zh-Hans-CN", "en-US" 等
+1344 |             // 我们需要提取主要部分，例如 "zh", "zh-Hans"
+1345 |             let components = Locale.components(fromIdentifier: lang)
+     |                                     `- warning: 'components(fromIdentifier:)' was deprecated in macOS 13: Use `Locale.Components(identifier:)` to access components [#DeprecatedDeclaration]
+1346 |             if let languageCode = components[NSLocale.Key.languageCode.rawValue] {
+1347 |                 keepLanguages.insert(languageCode) // "zh", "en"
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>

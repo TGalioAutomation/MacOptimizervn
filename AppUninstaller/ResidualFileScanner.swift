@@ -1,0 +1,334 @@
+import Foundation
+
+// MARK: - Dịch vụ quét file dư
+
+class ResidualFileScanner {
+    private let fileManager = FileManager.default
+    private let homeDirectory = URL(fileURLWithPath: NSHomeDirectory())
+    private let scanCache = CacheManager<String, [ResidualFile]>(maxSizeBytes: 50 * 1024 * 1024) // 50MB cache
+    private let taskQueue = BackgroundTaskQueue()
+    
+    /// Quét tất cả các file còn sót lại của ứng dụng
+
+    func scanResidualFiles(for app: InstalledApp) async -> [ResidualFile] {
+        let cacheKey = app.bundleIdentifier ?? app.name
+        
+        // Check cache first (5 minute TTL)
+        if let cachedFiles = scanCache.get(cacheKey) {
+            return cachedFiles
+        }
+        
+        // Perform scan on background thread
+        let residualFiles = await taskQueue.enqueue { [weak self] in
+            guard let self = self else { return [ResidualFile]() }
+            
+            var residualFiles: [ResidualFile] = []
+            
+            let appName = app.name
+            let bundleId = app.bundleIdentifier
+            
+            // Quét vị trí - kết quả xử lý hàng loạt
+
+            residualFiles.append(contentsOf: self.scanPreferences(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanApplicationSupport(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanCaches(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanLogs(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanSavedState(bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanContainers(bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanGroupContainers(bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanCookies(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanLaunchAgents(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanCrashReports(appName: appName, bundleId: bundleId))
+            residualFiles.append(contentsOf: self.scanDeveloper(appName: appName, bundleId: bundleId))
+            
+            return residualFiles
+        }
+        
+        // Cache the results
+        scanCache.set(cacheKey, value: residualFiles, ttl: 300)
+        
+        return residualFiles
+    }
+    
+    // MARK: - Dữ liệu phát triển (Xcode/Simulator, v.v.)
+
+    private func scanDeveloper(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let developerPath = homeDirectory.appendingPathComponent("Library/Developer")
+        
+        guard fileManager.fileExists(atPath: developerPath.path) else { return files }
+        
+        // 1. Generic Search in ~/Library/Developer
+        files.append(contentsOf: searchDirectory(developerPath, appName: appName, bundleId: bundleId, type: .developer))
+        
+        // 2. Specialized Logic for Xcode
+        if let bid = bundleId, bid == "com.apple.dt.Xcode" {
+            // List of specific Xcode related paths in user directory
+            let xcodePaths = [
+                developerPath.appendingPathComponent("Xcode"),
+                developerPath.appendingPathComponent("CoreSimulator"),
+                developerPath.appendingPathComponent("XCPGDevices"),
+                homeDirectory.appendingPathComponent("Library/MobileDevice"),
+                homeDirectory.appendingPathComponent("Library/Caches/com.apple.dt.Xcode"),
+                homeDirectory.appendingPathComponent("Library/Application Support/Xcode"),
+                homeDirectory.appendingPathComponent("Library/Preferences/com.apple.dt.Xcode.plist"),
+                homeDirectory.appendingPathComponent("Library/Saved Application State/com.apple.dt.Xcode.savedState"),
+                homeDirectory.appendingPathComponent("Library/Application Support/com.apple.dt.Xcode") // Check for bundle ID folder too
+            ]
+            
+            for path in xcodePaths {
+                if fileManager.fileExists(atPath: path.path) {
+                    let size = calculateSize(at: path)
+                    // Determine type based on path
+                    let type: FileType
+                    if path.path.contains("/Caches/") { type = .caches }
+                    else if path.path.contains("/Preferences/") { type = .preferences }
+                    else if path.path.contains("/Application Support/") { type = .applicationSupport }
+                    else if path.path.contains("/Saved Application State/") { type = .savedState }
+                    else { type = .developer }
+                    
+                    files.append(ResidualFile(path: path, type: type, size: size))
+                }
+            }
+        }
+        
+        return files
+    }
+    
+    // ĐÁNH DẤU: - Sở thích
+
+    private func scanPreferences(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let preferencesPath = homeDirectory.appendingPathComponent("Library/Preferences")
+        
+        files.append(contentsOf: searchDirectory(preferencesPath, appName: appName, bundleId: bundleId, type: .preferences))
+        
+        return files
+    }
+    
+    // MARK: - Hỗ trợ ứng dụng
+
+    private func scanApplicationSupport(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let appSupportPath = homeDirectory.appendingPathComponent("Library/Application Support")
+        
+        files.append(contentsOf: searchDirectory(appSupportPath, appName: appName, bundleId: bundleId, type: .applicationSupport))
+        
+        return files
+    }
+    
+    // ĐÁNH DẤU: - bộ đệm
+
+    private func scanCaches(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let cachesPath = homeDirectory.appendingPathComponent("Library/Caches")
+        
+        files.append(contentsOf: searchDirectory(cachesPath, appName: appName, bundleId: bundleId, type: .caches))
+        
+        return files
+    }
+    
+    // ĐÁNH DẤU: - Nhật ký
+
+    private func scanLogs(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let logsPath = homeDirectory.appendingPathComponent("Library/Logs")
+        
+        files.append(contentsOf: searchDirectory(logsPath, appName: appName, bundleId: bundleId, type: .logs))
+        
+        return files
+    }
+    
+    // ĐÁNH DẤU: - lưu trạng thái
+
+    private func scanSavedState(bundleId: String?) -> [ResidualFile] {
+        guard let bundleId = bundleId else { return [] }
+        var files: [ResidualFile] = []
+        let savedStatePath = homeDirectory.appendingPathComponent("Library/Saved Application State")
+        let targetPath = savedStatePath.appendingPathComponent("\(bundleId).savedState")
+        
+        if fileManager.fileExists(atPath: targetPath.path) {
+            let size = calculateSize(at: targetPath)
+            files.append(ResidualFile(path: targetPath, type: .savedState, size: size))
+        }
+        
+        return files
+    }
+    
+    // MÃ: - Thùng chứa
+
+    private func scanContainers(bundleId: String?) -> [ResidualFile] {
+        guard let bundleId = bundleId else { return [] }
+        var files: [ResidualFile] = []
+        let containersPath = homeDirectory.appendingPathComponent("Library/Containers")
+        let targetPath = containersPath.appendingPathComponent(bundleId)
+        
+        if fileManager.fileExists(atPath: targetPath.path) {
+            let size = calculateSize(at: targetPath)
+            files.append(ResidualFile(path: targetPath, type: .containers, size: size))
+        }
+        
+        return files
+    }
+    
+    // MARK: - nhóm chứa
+
+    private func scanGroupContainers(bundleId: String?) -> [ResidualFile] {
+        guard let bundleId = bundleId else { return [] }
+        var files: [ResidualFile] = []
+        let groupContainersPath = homeDirectory.appendingPathComponent("Library/Group Containers")
+        
+        guard fileManager.fileExists(atPath: groupContainersPath.path) else { return files }
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: groupContainersPath, includingPropertiesForKeys: nil)
+            for url in contents {
+                if url.lastPathComponent.contains(bundleId) {
+                    let size = calculateSize(at: url)
+                    files.append(ResidualFile(path: url, type: .groupContainers, size: size))
+                }
+            }
+        } catch {
+            // bỏ qua lỗi
+
+        }
+        
+        return files
+    }
+    
+    // MARK: - Cookies
+    private func scanCookies(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let cookiesPath = homeDirectory.appendingPathComponent("Library/Cookies")
+        
+        files.append(contentsOf: searchDirectory(cookiesPath, appName: appName, bundleId: bundleId, type: .cookies))
+        
+        return files
+    }
+    
+    // MARK: - đại lý bắt đầu
+
+    private func scanLaunchAgents(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let launchAgentsPath = homeDirectory.appendingPathComponent("Library/LaunchAgents")
+        
+        files.append(contentsOf: searchDirectory(launchAgentsPath, appName: appName, bundleId: bundleId, type: .launchAgents))
+        
+        return files
+    }
+    
+    // MARK: - báo cáo sự cố
+
+    private func scanCrashReports(appName: String, bundleId: String?) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        let crashLogsPath = homeDirectory.appendingPathComponent("Library/Logs/DiagnosticReports")
+        
+        guard fileManager.fileExists(atPath: crashLogsPath.path) else { return files }
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: crashLogsPath, includingPropertiesForKeys: nil)
+            for url in contents {
+                let fileName = url.lastPathComponent.lowercased()
+                if fileName.contains(appName.lowercased()) {
+                    let size = calculateSize(at: url)
+                    files.append(ResidualFile(path: url, type: .crashReports, size: size))
+                }
+            }
+        } catch {
+            // bỏ qua lỗi
+
+        }
+        
+        return files
+    }
+    
+    // MARK: - Tìm kiếm phổ quát
+
+    private func searchDirectory(_ directory: URL, appName: String, bundleId: String?, type: FileType) -> [ResidualFile] {
+        var files: [ResidualFile] = []
+        
+        guard fileManager.fileExists(atPath: directory.path) else { return files }
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+            
+            // Process in batches to prevent memory spikes
+            let batchSize = 100
+            for batch in contents.chunked(into: batchSize) {
+                for url in batch {
+                    let fileName = url.lastPathComponent.lowercased()
+                    let appNameLower = appName.lowercased()
+                    let bundleIdLower = bundleId?.lowercased() ?? ""
+                    
+                    var matches = false
+                    
+                    // Khớp tên ứng dụng
+
+                    if fileName.contains(appNameLower) {
+                        matches = true
+                    }
+                    
+                    // ID gói phù hợp
+
+                    if !bundleIdLower.isEmpty && fileName.contains(bundleIdLower) {
+                        matches = true
+                    }
+                    
+                    // Loại bỏ kết hợp phân tách thành phần ID gói nguy hiểm
+
+                    // Logic gốc sẽ chia com.apple.safari thành apple và match tất cả file chứa apple, điều này cực kỳ nguy hiểm
+
+                    // Chỉ giữ lại các kết quả trùng khớp ID gói đầy đủ và trùng khớp tên ứng dụng
+
+                    
+                    if matches {
+                        let size = calculateSize(at: url)
+                        files.append(ResidualFile(path: url, type: type, size: size))
+                    }
+                }
+            }
+        } catch {
+            // bỏ qua lỗi
+
+        }
+        
+        return files
+    }
+    
+    // MARK: - tính kích thước
+
+    private func calculateSize(at url: URL) -> Int64 {
+        var totalSize: Int64 = 0
+        
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory) {
+            if isDirectory.boolValue {
+                let enumerator = fileManager.enumerator(
+                    at: url,
+                    includingPropertiesForKeys: [.fileSizeKey],
+                    options: [.skipsHiddenFiles],
+                    errorHandler: nil
+                )
+                
+                while let fileURL = enumerator?.nextObject() as? URL {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+                        totalSize += Int64(resourceValues.fileSize ?? 0)
+                    } catch {
+                        continue
+                    }
+                }
+            } else {
+                do {
+                    let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                    totalSize = Int64(attributes[.size] as? UInt64 ?? 0)
+                } catch {
+                    // bỏ qua lỗi
+
+                }
+            }
+        }
+        
+        return totalSize
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "localize-vietnamese-app",
+  "task": "Viet hoa giao dien ung dung macOS AppUninstaller/MacOptimizer",
+  "scope": [
+    "AppUninstaller/NavigationSidebar.swift",
+    "AppUninstaller/ContentView.swift",
+    "AppUninstaller/CleanupResultsView.swift",
+    "AppUninstaller/CleanupDetailResultsView.swift",
+    "AppUninstaller/FileExplorerView.swift",
+    "AppUninstaller/LargeFileDetailsSplitView.swift",
+    "AppUninstaller/MenuBar",
+    "AppUninstaller/ScanServiceManager.swift",
+    "AppUninstaller/JunkCleaner.swift",
+    "AppUninstaller/OptimizerView.swift",
+    "AppUninstaller/SystemMonitorService.swift"
+  ],
+  "notes": [
+    "Repo khong co scripts/agent-search.mjs nen search duoc thuc hien bang rg.",
+    "Muc tieu la thay the chuoi UI Trung/Anh con sot bang tieng Viet, uu tien man hinh nguoi dung thay truc tiep."
+  ]
+}

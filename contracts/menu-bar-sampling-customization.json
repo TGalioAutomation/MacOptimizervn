@@ -1,0 +1,19 @@
+{
+  "task": "menu-bar-sampling-customization",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/SystemMonitorService.swift",
+    "AppUninstaller/MenuBar/MenuBarManager.swift",
+    "AppUninstaller/MenuBar/MenuBarCustomizationView.swift"
+  ],
+  "goal": [
+    "Cho phép chọn profile lấy mẫu cho menu bar",
+    "Cho phép chỉnh cadence riêng cho CPU, RAM, Mạng, Pin, DISK, top tiến trình và cảnh báo RAM",
+    "Giữ logic chỉ lấy mẫu khi metric đang bật hoặc detail đang mở",
+    "Build lại app sau khi chỉnh"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

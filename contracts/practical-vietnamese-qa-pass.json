@@ -1,0 +1,22 @@
+{
+  "id": "practical-vietnamese-qa-pass",
+  "task": "Ra soat UI chinh, lam muot cau chu tieng Viet, chuan hoa thuat ngu va bat loi layout sau dot viet hoa",
+  "scope": [
+    "AppUninstaller/NavigationSidebar.swift",
+    "AppUninstaller/ConsoleComponents/ConsoleSidebar.swift",
+    "AppUninstaller/MonitorView.swift",
+    "AppUninstaller/PrivacyScannerService.swift",
+    "AppUninstaller/SmartCleanerView.swift",
+    "AppUninstaller/MenuBar",
+    "AppUninstaller/SettingsView.swift"
+  ],
+  "notes": [
+    "Repo khong co scripts/agent-search.mjs nen search duoc thuc hien bang rg.",
+    "Muc tieu cua pass nay la sua cau chu Viet con tho, thong nhat thuat ngu va kiem tra giao dien sau khi text dai hon."
+  ],
+  "checks": [
+    "rg khong con ky tu Han hoac placeholder loi trong AppUninstaller/*.swift",
+    "./build.sh thanh cong",
+    "co it nhat mot anh chup UI de xac nhan layout va cau chu"
+  ]
+}
