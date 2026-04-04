@@ -3,9 +3,13 @@ import SwiftUI
 struct MenuBarCustomizationView: View {
     @ObservedObject var manager: MenuBarManager
     @ObservedObject private var systemMonitor: SystemMonitorService
-    @Environment(\.dismiss) private var dismiss
     
-    private let compactColumns = [GridItem(.adaptive(minimum: 120), spacing: 10)]
+    private let compactColumns = [GridItem(.adaptive(minimum: 108), spacing: 8)]
+    private let sectionTitleFont = Font.system(size: 14, weight: .semibold, design: .rounded)
+    private let primaryBodyFont = Font.system(size: 12, weight: .regular)
+    private let secondaryBodyFont = Font.system(size: 11, weight: .regular)
+    private let itemTitleFont = Font.system(size: 13, weight: .semibold)
+    private let badgeFont = Font.system(size: 12, weight: .semibold)
     
     init(manager: MenuBarManager) {
         self.manager = manager
@@ -17,7 +21,7 @@ struct MenuBarCustomizationView: View {
             header
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
                     previewCard
                     samplingProfilesCard
                     samplingIntervalsCard
@@ -26,7 +30,7 @@ struct MenuBarCustomizationView: View {
                     availableMetricsCard
                     optionsCard
                 }
-                .padding(20)
+                .padding(16)
             }
         }
         .background(Color(hex: "1C0C24"))
@@ -36,46 +40,44 @@ struct MenuBarCustomizationView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Tùy chỉnh thanh menu")
-                    .font(.headline)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
                 Text("Chọn thông tin bạn muốn luôn nhìn thấy trên thanh menu.")
-                    .font(.system(size: 12))
+                    .font(primaryBodyFont)
+                    .lineSpacing(1)
                     .foregroundColor(.white.opacity(0.6))
             }
             
             Spacer()
             
             Button(action: {
-                dismiss()
+                manager.closeDetail()
             }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
     
     private var previewCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Xem trước")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             
             HStack(spacing: 10) {
-                if manager.showsStatusIcon {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 20, height: 20)
-                        .background(Color.white.opacity(0.12))
-                        .clipShape(Circle())
-                }
-                
-                if manager.statusMetricDisplays.isEmpty {
+                if let previewImage = manager.statusItemPreviewImage() {
+                    Image(nsImage: previewImage)
+                        .interpolation(.high)
+                } else if manager.statusMetricDisplays.isEmpty {
                     Text("Chỉ biểu tượng")
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.white)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -86,7 +88,8 @@ struct MenuBarCustomizationView: View {
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.white.opacity(0.9))
                                     Text(display.text)
-                                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .monospacedDigit()
                                         .foregroundColor(.white)
                                 }
                                 .help("\(display.metric.title): \(display.text)\n\(display.metric.tooltipDescription)")
@@ -102,7 +105,7 @@ struct MenuBarCustomizationView: View {
             .background(Color.white.opacity(0.08))
             .cornerRadius(12)
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -110,10 +113,11 @@ struct MenuBarCustomizationView: View {
     private var presetsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Preset hiển thị")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             Text("Nhóm này chỉ quyết định thông tin nào hiện trên thanh menu, không đổi nhịp lấy mẫu.")
-                .font(.system(size: 11))
+                .font(secondaryBodyFont)
+                .lineSpacing(1)
                 .foregroundColor(.white.opacity(0.55))
             
             LazyVGrid(columns: compactColumns, spacing: 10) {
@@ -138,7 +142,7 @@ struct MenuBarCustomizationView: View {
                 }
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -146,10 +150,11 @@ struct MenuBarCustomizationView: View {
     private var samplingProfilesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Nhịp lấy mẫu")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             Text("Mỗi profile đổi tốc độ thu thập CPU, RAM, Mạng, Pin, DISK và danh sách tiến trình.")
-                .font(.system(size: 11))
+                .font(secondaryBodyFont)
+                .lineSpacing(1)
                 .foregroundColor(.white.opacity(0.55))
             
             LazyVGrid(columns: compactColumns, spacing: 10) {
@@ -164,10 +169,11 @@ struct MenuBarCustomizationView: View {
                         .foregroundColor(.white.opacity(0.8))
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Bạn đang dùng nhịp lấy mẫu tùy chỉnh")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(itemTitleFont)
                             .foregroundColor(.white)
                         Text("Các chỉnh sửa phía dưới sẽ được lưu lại cho lần mở sau.")
-                            .font(.system(size: 11))
+                            .font(secondaryBodyFont)
+                            .lineSpacing(1)
                             .foregroundColor(.white.opacity(0.55))
                     }
                     Spacer()
@@ -177,7 +183,7 @@ struct MenuBarCustomizationView: View {
                 .cornerRadius(12)
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -185,13 +191,14 @@ struct MenuBarCustomizationView: View {
     private var samplingIntervalsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Tùy chỉnh theo từng loại")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             Text("Chu kỳ càng ngắn thì số liệu càng mới, nhưng tốn tài nguyên nền hơn.")
-                .font(.system(size: 11))
+                .font(secondaryBodyFont)
+                .lineSpacing(1)
                 .foregroundColor(.white.opacity(0.55))
             Text("Chỉ những metric đang bật hoặc panel đang mở mới được lấy mẫu.")
-                .font(.system(size: 11))
+                .font(secondaryBodyFont)
                 .foregroundColor(.green.opacity(0.85))
             
             VStack(spacing: 10) {
@@ -200,7 +207,7 @@ struct MenuBarCustomizationView: View {
                 }
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -208,12 +215,13 @@ struct MenuBarCustomizationView: View {
     private var selectedMetricsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Thứ tự đang hiển thị")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             
             if manager.selectedStatusMetrics.isEmpty {
                 Text("Hiện chưa có metric nào được bật. Bạn vẫn có thể giữ lại biểu tượng ứng dụng trên thanh menu.")
-                    .font(.system(size: 12))
+                    .font(primaryBodyFont)
+                    .lineSpacing(1)
                     .foregroundColor(.white.opacity(0.6))
             } else {
                 VStack(spacing: 10) {
@@ -226,10 +234,10 @@ struct MenuBarCustomizationView: View {
                             
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(metric.title)
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(itemTitleFont)
                                     .foregroundColor(.white)
                                 Text(exampleText(for: metric))
-                                    .font(.system(size: 11))
+                                    .font(secondaryBodyFont)
                                     .foregroundColor(.white.opacity(0.5))
                             }
                             
@@ -257,7 +265,7 @@ struct MenuBarCustomizationView: View {
                 }
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -265,7 +273,7 @@ struct MenuBarCustomizationView: View {
     private var availableMetricsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Thông tin có thể hiển thị")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             
             ForEach(MenuBarStatusMetric.allCases) { metric in
@@ -276,10 +284,10 @@ struct MenuBarCustomizationView: View {
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(metric.title)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(itemTitleFont)
                                 .foregroundColor(.white)
                             Text(exampleText(for: metric))
-                                .font(.system(size: 11))
+                                .font(secondaryBodyFont)
                                 .foregroundColor(.white.opacity(0.5))
                         }
                         
@@ -291,7 +299,7 @@ struct MenuBarCustomizationView: View {
                 .help("\(metric.title)\n\(metric.tooltipDescription)")
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -299,7 +307,7 @@ struct MenuBarCustomizationView: View {
     private var optionsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Tùy chọn khác")
-                .font(.system(size: 14, weight: .semibold))
+                .font(sectionTitleFont)
                 .foregroundColor(.white)
             
             Toggle(isOn: Binding(
@@ -308,9 +316,10 @@ struct MenuBarCustomizationView: View {
             )) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Hiện biểu tượng ứng dụng")
+                        .font(itemTitleFont)
                         .foregroundColor(.white)
                     Text("Giữ lại biểu tượng app ở đầu status item.")
-                        .font(.system(size: 11))
+                        .font(secondaryBodyFont)
                         .foregroundColor(.white.opacity(0.5))
                 }
             }
@@ -322,7 +331,7 @@ struct MenuBarCustomizationView: View {
                 systemMonitor.applySamplingProfile(.balanced)
             }) {
                 Text("Khôi phục cấu hình mặc định")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(itemTitleFont)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
@@ -331,7 +340,7 @@ struct MenuBarCustomizationView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white.opacity(0.05))
         .cornerRadius(16)
     }
@@ -340,15 +349,16 @@ struct MenuBarCustomizationView: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(itemTitleFont)
                     .foregroundColor(.white)
                 Text(subtitle)
-                    .font(.system(size: 11))
+                    .font(secondaryBodyFont)
+                    .lineSpacing(1)
                     .foregroundColor(.white.opacity(0.6))
                 Spacer(minLength: 0)
             }
             .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
             .background(Color.white.opacity(0.08))
             .cornerRadius(12)
         }
@@ -364,7 +374,7 @@ struct MenuBarCustomizationView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(profile.title)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(itemTitleFont)
                         .foregroundColor(.white)
                     Spacer()
                     if isActive {
@@ -373,13 +383,14 @@ struct MenuBarCustomizationView: View {
                     }
                 }
                 Text(profile.subtitle)
-                    .font(.system(size: 11))
+                    .font(secondaryBodyFont)
+                    .lineSpacing(1)
                     .foregroundColor(.white.opacity(0.62))
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
             }
             .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
             .background(isActive ? Color.white.opacity(0.14) : Color.white.opacity(0.08))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -395,17 +406,19 @@ struct MenuBarCustomizationView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(kind.title)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(itemTitleFont)
                         .foregroundColor(.white)
                     Text(kind.subtitle)
-                        .font(.system(size: 11))
+                        .font(secondaryBodyFont)
+                        .lineSpacing(1)
                         .foregroundColor(.white.opacity(0.5))
                 }
                 
                 Spacer()
                 
                 Text(systemMonitor.formattedSamplingInterval(for: kind))
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .font(badgeFont)
+                    .monospacedDigit()
                     .foregroundColor(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -422,12 +435,12 @@ struct MenuBarCustomizationView: View {
                 step: kind.step
             ) {
                 Text("Điều chỉnh nhịp lấy mẫu")
-                    .font(.system(size: 11))
+                    .font(secondaryBodyFont)
                     .foregroundColor(.white.opacity(0.55))
             }
             .tint(.green)
         }
-        .padding(12)
+        .padding(10)
         .background(Color.white.opacity(0.06))
         .cornerRadius(12)
         .help("\(kind.title)\n\(kind.subtitle)")

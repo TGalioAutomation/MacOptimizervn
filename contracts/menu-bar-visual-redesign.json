@@ -1,0 +1,18 @@
+{
+  "task": "menu-bar-visual-redesign",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/MenuBar/MenuBarManager.swift",
+    "AppUninstaller/MenuBar/MenuBarCustomizationView.swift"
+  ],
+  "goal": [
+    "Thiết kế lại status item menu bar theo phong cách capsule gọn giống mẫu tham chiếu",
+    "Giữ nội dung động cho CPU, RAM, DISK, mạng, pin và GPU",
+    "Giảm cảm giác chữ rời rạc bằng một banner hình ảnh tùy biến thay cho attributedTitle đơn giản",
+    "Build lại app sau khi chỉnh"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

@@ -5,6 +5,15 @@ struct MenuBarDetailContainer: View {
     @ObservedObject var systemMonitor: SystemMonitorService
     var route: MenuBarRoute
     
+    private var detailSize: CGSize {
+        switch route {
+        case .customization:
+            return CGSize(width: 332, height: 560)
+        default:
+            return CGSize(width: 360, height: 620)
+        }
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "1C0C24").ignoresSafeArea()
@@ -26,6 +35,6 @@ struct MenuBarDetailContainer: View {
                 EmptyView()
             }
         }
-        .frame(width: 360, height: 620) // Fixed size for detail window
+        .frame(width: detailSize.width, height: detailSize.height)
     }
 }

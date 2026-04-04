@@ -3,7 +3,6 @@ import SwiftUI
 struct MenuBarView: View {
     @EnvironmentObject var manager: MenuBarManager
     @EnvironmentObject var systemMonitor: SystemMonitorService
-    @State private var showCustomizationSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -113,7 +112,7 @@ struct MenuBarView: View {
                     }
                 Spacer()
                 Button(action: {
-                    showCustomizationSheet = true
+                    manager.showDetail(route: .customization)
                 }) {
                     Image(systemName: "gearshape.fill")
                         .font(.system(size: 14))
@@ -137,9 +136,6 @@ struct MenuBarView: View {
         }
         .frame(width: 380)
         .background(Color(hex: "1C0C24")) // Deep purple background
-        .sheet(isPresented: $showCustomizationSheet) {
-            MenuBarCustomizationView(manager: manager)
-        }
     }
 }
 

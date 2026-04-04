@@ -264,10 +264,9 @@ class MenuBarManager: NSObject, ObservableObject {
         if let mainWindow = popoverWindow {
             let mainFrame = mainWindow.frame
             let gap: CGFloat = 10
-            // We need to fetch size from content or set fixed size. 
-            // MenuBarDetailContainer has .frame(width: 320, height: 500)
-            let detailWidth: CGFloat = 360 
-            let detailHeight: CGFloat = 620
+            let detailSize = detailWindowSize(for: route)
+            let detailWidth = detailSize.width
+            let detailHeight = detailSize.height
             
             // Should align tops? usually.
             // Or center vertically relative to main window?
@@ -301,7 +300,21 @@ class MenuBarManager: NSObject, ObservableObject {
         let newController = NSHostingController(rootView: detailView)
         
         window.contentViewController = newController
+        let detailSize = detailWindowSize(for: route)
+        var frame = window.frame
+        frame.origin.y += frame.height - detailSize.height
+        frame.size = detailSize
+        window.setFrame(frame, display: true, animate: true)
         currentDetailRoute = route
+    }
+
+    private func detailWindowSize(for route: MenuBarRoute) -> CGSize {
+        switch route {
+        case .customization:
+            return CGSize(width: 332, height: 560)
+        default:
+            return CGSize(width: 360, height: 620)
+        }
     }
     
     // MARK: - Open Main App
@@ -498,14 +511,14 @@ extension MenuBarManager {
         guard let button = statusItem?.button else { return }
         
         let displays = statusMetricDisplays
-        let attributedTitle = makeStatusItemAttributedTitle(from: displays)
-        let title = displays.map(\.text).joined(separator: "   ")
+        let renderedImage = makeStatusItemImage(from: displays)
         
-        button.image = showsStatusIcon ? statusBarIconImage : nil
-        button.imagePosition = showsStatusIcon ? (title.isEmpty ? .imageOnly : .imageLeading) : .noImage
-        button.attributedTitle = attributedTitle
+        button.image = renderedImage
+        button.imagePosition = .imageOnly
+        button.title = ""
+        button.attributedTitle = NSAttributedString(string: "")
         button.toolTip = statusItemTooltipText
-        statusItem?.length = title.isEmpty ? NSStatusItem.squareLength : NSStatusItem.variableLength
+        statusItem?.length = renderedImage.map { max($0.size.width + 10, NSStatusItem.squareLength) } ?? NSStatusItem.squareLength
     }
     
     struct StatusMetricDisplay: Identifiable {
@@ -539,46 +552,191 @@ extension MenuBarManager {
         }
     }
 
-    private func makeStatusItemAttributedTitle(from displays: [StatusMetricDisplay]) -> NSAttributedString {
-        let title = NSMutableAttributedString()
-        let textAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium),
-            .foregroundColor: NSColor.labelColor
-        ]
-        
-        for (index, display) in displays.enumerated() {
-            if index > 0 {
-                title.append(NSAttributedString(string: "   ", attributes: textAttributes))
-            }
-            title.append(symbolAttachment(named: display.metric.symbolName))
-            title.append(NSAttributedString(string: " ", attributes: textAttributes))
-            title.append(NSAttributedString(string: display.text, attributes: textAttributes))
-        }
-        
-        return title
+    func statusItemPreviewImage() -> NSImage? {
+        makeStatusItemImage(from: statusMetricDisplays)
     }
 
-    private func symbolAttachment(named symbolName: String) -> NSAttributedString {
-        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else {
-            return NSAttributedString(string: "")
+    private struct StatusBannerSegment {
+        let metric: MenuBarStatusMetric
+        let label: String
+        let value: String
+        let accentColor: NSColor
+    }
+
+    private func makeStatusItemImage(from displays: [StatusMetricDisplay]) -> NSImage? {
+        let segments = displays.map(statusBannerSegment(for:))
+        let shouldShowLeadingIcon = showsStatusIcon || segments.isEmpty
+        let bannerHeight: CGFloat = 20
+        let iconWidth: CGFloat = shouldShowLeadingIcon ? 22 : 0
+        let spacing: CGFloat = 5
+        let horizontalInset: CGFloat = 8
+        let labelFont = NSFont.systemFont(ofSize: 8.5, weight: .bold)
+        let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 10.5, weight: .semibold)
+        
+        var totalWidth: CGFloat = 0
+        var chipRects: [NSRect] = []
+        
+        if shouldShowLeadingIcon {
+            totalWidth += iconWidth
         }
         
-        image.isTemplate = true
-        image.size = NSSize(width: 12, height: 12)
+        if shouldShowLeadingIcon && !segments.isEmpty {
+            totalWidth += spacing
+        }
         
-        let attachment = NSTextAttachment()
-        attachment.image = image
-        attachment.bounds = NSRect(x: 0, y: -2, width: 12, height: 12)
-        return NSAttributedString(attachment: attachment)
+        for (index, segment) in segments.enumerated() {
+            let width = statusBannerChipWidth(for: segment, labelFont: labelFont, valueFont: valueFont, horizontalInset: horizontalInset)
+            chipRects.append(NSRect(x: totalWidth, y: 0, width: width, height: bannerHeight))
+            totalWidth += width
+            if index < segments.count - 1 {
+                totalWidth += spacing
+            }
+        }
+        
+        if totalWidth == 0 {
+            totalWidth = iconWidth
+        }
+        
+        let imageSize = NSSize(width: totalWidth, height: bannerHeight)
+        let image = NSImage(size: imageSize)
+        image.lockFocus()
+        
+        NSGraphicsContext.current?.imageInterpolation = .high
+        
+        if shouldShowLeadingIcon {
+            let iconRect = NSRect(x: 0, y: 0, width: iconWidth, height: bannerHeight)
+            drawStatusBannerCapsule(in: iconRect, accent: NSColor(calibratedRed: 0.87, green: 0.46, blue: 0.80, alpha: 1.0))
+            drawStatusBannerIcon(in: iconRect.insetBy(dx: 4, dy: 3))
+        }
+        
+        for (segment, rect) in zip(segments, chipRects) {
+            drawStatusBannerCapsule(in: rect, accent: segment.accentColor)
+            drawStatusBannerText(segment, in: rect, labelFont: labelFont, valueFont: valueFont, horizontalInset: horizontalInset)
+        }
+        
+        image.unlockFocus()
+        image.isTemplate = false
+        return image
+    }
+
+    private func statusBannerChipWidth(
+        for segment: StatusBannerSegment,
+        labelFont: NSFont,
+        valueFont: NSFont,
+        horizontalInset: CGFloat
+    ) -> CGFloat {
+        let labelAttributes: [NSAttributedString.Key: Any] = [.font: labelFont]
+        let valueAttributes: [NSAttributedString.Key: Any] = [.font: valueFont]
+        let labelWidth = (segment.label as NSString).size(withAttributes: labelAttributes).width
+        let valueWidth = (segment.value as NSString).size(withAttributes: valueAttributes).width
+        return ceil(labelWidth + valueWidth + horizontalInset * 2 + 8)
+    }
+
+    private func drawStatusBannerCapsule(in rect: NSRect, accent: NSColor) {
+        let path = NSBezierPath(roundedRect: rect, xRadius: rect.height / 2, yRadius: rect.height / 2)
+        let gradient = NSGradient(
+            colors: [
+                NSColor(calibratedRed: 0.24, green: 0.29, blue: 0.43, alpha: 0.94),
+                NSColor(calibratedRed: 0.17, green: 0.20, blue: 0.31, alpha: 0.94)
+            ]
+        )
+        gradient?.draw(in: path, angle: 0)
+        
+        accent.withAlphaComponent(0.26).setStroke()
+        path.lineWidth = 1
+        path.stroke()
+        
+        let highlight = NSBezierPath(roundedRect: rect.insetBy(dx: 0.5, dy: 0.5), xRadius: (rect.height - 1) / 2, yRadius: (rect.height - 1) / 2)
+        NSColor.white.withAlphaComponent(0.06).setStroke()
+        highlight.lineWidth = 0.5
+        highlight.stroke()
+    }
+
+    private func drawStatusBannerIcon(in rect: NSRect) {
+        if let icon = statusBarIconImage?.copy() as? NSImage {
+            icon.isTemplate = false
+            icon.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.95)
+        }
+    }
+
+    private func drawStatusBannerText(
+        _ segment: StatusBannerSegment,
+        in rect: NSRect,
+        labelFont: NSFont,
+        valueFont: NSFont,
+        horizontalInset: CGFloat
+    ) {
+        let labelAttributes: [NSAttributedString.Key: Any] = [
+            .font: labelFont,
+            .foregroundColor: segment.accentColor.withAlphaComponent(0.96)
+        ]
+        let valueAttributes: [NSAttributedString.Key: Any] = [
+            .font: valueFont,
+            .foregroundColor: NSColor.white
+        ]
+        
+        let labelSize = (segment.label as NSString).size(withAttributes: labelAttributes)
+        let valueSize = (segment.value as NSString).size(withAttributes: valueAttributes)
+        let totalWidth = labelSize.width + 8 + valueSize.width
+        let startX = rect.minX + max(horizontalInset, (rect.width - totalWidth) / 2)
+        let labelRect = NSRect(
+            x: startX,
+            y: rect.midY - labelSize.height / 2 - 0.5,
+            width: labelSize.width,
+            height: labelSize.height
+        )
+        let valueRect = NSRect(
+            x: labelRect.maxX + 8,
+            y: rect.midY - valueSize.height / 2 - 0.5,
+            width: valueSize.width,
+            height: valueSize.height
+        )
+        
+        (segment.label as NSString).draw(in: labelRect, withAttributes: labelAttributes)
+        (segment.value as NSString).draw(in: valueRect, withAttributes: valueAttributes)
+    }
+
+    private func statusBannerSegment(for display: StatusMetricDisplay) -> StatusBannerSegment {
+        switch display.metric {
+        case .gpu:
+            return StatusBannerSegment(metric: .gpu, label: "GPU", value: display.text, accentColor: NSColor(calibratedRed: 0.98, green: 0.57, blue: 0.78, alpha: 1.0))
+        case .storage:
+            return StatusBannerSegment(
+                metric: .storage,
+                label: "DISK",
+                value: "\(compactByteString(diskManager.freeSize))/\(compactByteString(diskManager.totalSize))",
+                accentColor: NSColor(calibratedRed: 0.55, green: 0.80, blue: 1.0, alpha: 1.0)
+            )
+        case .memory:
+            return StatusBannerSegment(metric: .memory, label: "RAM", value: display.text, accentColor: NSColor(calibratedRed: 0.63, green: 0.98, blue: 0.80, alpha: 1.0))
+        case .cpu:
+            return StatusBannerSegment(metric: .cpu, label: "CPU", value: display.text, accentColor: NSColor(calibratedRed: 1.0, green: 0.78, blue: 0.53, alpha: 1.0))
+        case .network:
+            return StatusBannerSegment(
+                metric: .network,
+                label: "NET",
+                value: "\(shortSpeedString(systemMonitor.downloadSpeed))/\(shortSpeedString(systemMonitor.uploadSpeed))",
+                accentColor: NSColor(calibratedRed: 0.58, green: 0.92, blue: 1.0, alpha: 1.0)
+            )
+        case .battery:
+            return StatusBannerSegment(metric: .battery, label: "PIN", value: display.text, accentColor: NSColor(calibratedRed: 1.0, green: 0.90, blue: 0.52, alpha: 1.0))
+        }
     }
     
     private func shortByteString(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useGB, .useMB]
+        formatter.allowedUnits = [.useTB, .useGB, .useMB]
         formatter.countStyle = .file
         formatter.includesUnit = true
         formatter.isAdaptive = true
         return formatter.string(fromByteCount: bytes).replacingOccurrences(of: " ", with: "")
+    }
+
+    private func compactByteString(_ bytes: Int64) -> String {
+        shortByteString(bytes)
+            .replacingOccurrences(of: "GB", with: "G")
+            .replacingOccurrences(of: "MB", with: "M")
+            .replacingOccurrences(of: "TB", with: "T")
     }
     
     private func shortSpeedString(_ bytesPerSecond: Double) -> String {
