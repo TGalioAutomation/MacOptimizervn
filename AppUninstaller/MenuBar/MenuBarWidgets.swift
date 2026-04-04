@@ -1,200 +1,248 @@
 import SwiftUI
 
-// MARK: - Widget Container Style
-struct MenuBarWidgetStyle: ViewModifier {
+struct MenuBarGlassCardModifier: ViewModifier {
+    let cornerRadius: CGFloat
+    
     func body(content: Content) -> some View {
         content
-            .padding(12)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5)) // Slightly transparent standard background
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.18),
+                                    Color.white.opacity(0.08)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color.black.opacity(0.22))
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
+                }
             )
     }
 }
 
 extension View {
-    func menuBarWidgetStyle() -> some View {
-        modifier(MenuBarWidgetStyle())
+    func menuBarGlassCard(cornerRadius: CGFloat = 24) -> some View {
+        modifier(MenuBarGlassCardModifier(cornerRadius: cornerRadius))
     }
 }
 
-// MARK: - Storage Widget
+private struct MenuBarIconTile: View {
+    let symbol: String
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.14))
+            Image(systemName: symbol)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white.opacity(0.95))
+        }
+        .frame(width: 48, height: 48)
+    }
+}
+
+private struct MenuBarProgressBar: View {
+    let progress: Double
+    
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.white.opacity(0.18))
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.82), Color.white.opacity(0.45)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: max(26, proxy.size.width * max(0.08, min(progress, 1.0))))
+            }
+        }
+        .frame(height: 13)
+    }
+}
+
+struct MenuBarPrimaryPillButton: View {
+    let title: String
+    let colors: [Color]
+    
+    var body: some View {
+        Text(title)
+            .font(.system(size: 11, weight: .bold))
+            .foregroundColor(.black.opacity(0.85))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background(
+                LinearGradient(colors: colors, startPoint: .leading, endPoint: .trailing)
+            )
+            .clipShape(Capsule())
+            .shadow(color: colors.first?.opacity(0.35) ?? .clear, radius: 10, y: 4)
+    }
+}
+
+private struct MenuBarMetricCard: View {
+    let icon: String
+    let title: String
+    let primaryText: String
+    let secondaryText: String?
+    let progress: Double?
+    let actionTitle: String?
+    let actionColors: [Color]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
+                MenuBarIconTile(symbol: icon)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                    Text(primaryText)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.88))
+                }
+                Spacer(minLength: 0)
+            }
+            
+            if let progress {
+                MenuBarProgressBar(progress: progress)
+            }
+            
+            if let secondaryText {
+                Text(secondaryText)
+                    .font(.system(size: 10))
+                    .foregroundColor(.white.opacity(0.72))
+                    .lineLimit(2)
+            }
+            
+            if let actionTitle {
+                MenuBarPrimaryPillButton(title: actionTitle, colors: actionColors)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 128, alignment: .topLeading)
+        .menuBarGlassCard()
+    }
+}
+
 struct StorageWidget: View {
     @ObservedObject var diskManager = DiskSpaceManager.shared
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "internaldrive")
-                    .font(.system(size: 16))
-                Text("Macintosh HD")
-                    .font(.system(size: 12, weight: .medium))
-                Spacer()
-            }
-            
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Trống: \(diskManager.formattedFree)")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                    Text("Tổng: \(diskManager.formattedTotal)")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Text("Giải phóng")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color(nsColor: .controlAccentColor)) // Use system accent
-                    .cornerRadius(6)
-            }
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: "internaldrive.fill",
+            title: "Dung lượng",
+            primaryText: "\(shortBytes(diskManager.usedSize)) / \(shortBytes(diskManager.totalSize))",
+            secondaryText: "Trống \(shortBytes(diskManager.freeSize))",
+            progress: diskManager.usagePercentage,
+            actionTitle: "Dọn ngay",
+            actionColors: [Color(hex: "31D8FF"), Color(hex: "10A6E9")]
+        )
+    }
+    
+    private func shortBytes(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useTB, .useGB]
+        formatter.countStyle = .file
+        formatter.includesUnit = true
+        formatter.isAdaptive = true
+        return formatter.string(fromByteCount: bytes).replacingOccurrences(of: " ", with: " ")
     }
 }
 
-// MARK: - Memory Widget
 struct MemoryWidget: View {
     @ObservedObject var systemMonitor: SystemMonitorService
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "memorychip")
-                    .font(.system(size: 16))
-                Text("Bộ nhớ")
-                    .font(.system(size: 12, weight: .medium))
-                Spacer()
-            }
-            
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Khả dụng: \(systemMonitor.memoryTotalString) (tổng)") // Showing Total for now as "Available" logic in Swift is tricky without more math
-                     // Ideally we show "Available" calculated from Total - Used.
-                     // But let's just stick to "Used / Total" format or similar.
-                    Text("Đã dùng: \(systemMonitor.memoryUsedString)")
-                         .font(.system(size: 10))
-                         .foregroundColor(.secondary)
-                }
-                Spacer()
-                Text("Giải phóng")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color(nsColor: .controlAccentColor))
-                    .cornerRadius(6)
-            }
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: "memorychip.fill",
+            title: "Bộ nhớ",
+            primaryText: "\(systemMonitor.memoryUsedString) / \(systemMonitor.memoryTotalString)",
+            secondaryText: "Áp lực \(Int(systemMonitor.memoryPressure * 100))%",
+            progress: systemMonitor.memoryUsage,
+            actionTitle: "Giải phóng",
+            actionColors: [Color(hex: "31D8FF"), Color(hex: "10A6E9")]
+        )
     }
 }
 
-// MARK: - Battery Widget
 struct BatteryWidget: View {
     @ObservedObject var systemMonitor: SystemMonitorService
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: systemMonitor.isCharging ? "battery.100.bolt" : "battery.100")
-                    .font(.system(size: 16))
-                Text("Pin")
-                    .font(.system(size: 12, weight: .medium))
-                Spacer()
-                Text("\(Int(systemMonitor.batteryLevel * 100))%")
-                    .font(.system(size: 12, weight: .bold))
-            }
-            
-            Text(systemMonitor.batteryState)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: systemMonitor.isCharging ? "battery.100.bolt" : "battery.100",
+            title: "Pin",
+            primaryText: "\(Int(systemMonitor.batteryLevel * 100))% còn lại",
+            secondaryText: systemMonitor.batteryState,
+            progress: nil,
+            actionTitle: nil,
+            actionColors: []
+        )
+        .frame(minHeight: 104)
     }
 }
 
-// MARK: - CPU Widget
 struct CPUWidget: View {
     @ObservedObject var systemMonitor: SystemMonitorService
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "cpu")
-                    .font(.system(size: 16))
-                Text("CPU")
-                    .font(.system(size: 12, weight: .medium))
-                Spacer()
-                Text("\(Int(systemMonitor.cpuUsage * 100))%")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(systemMonitor.cpuUsage > 0.8 ? .red : .primary)
-            }
-            
-            Text("Tải: \(Int(systemMonitor.cpuUsage * 100))%") // Simplified label
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: "cpu",
+            title: "CPU",
+            primaryText: "Mức dùng \(Int(systemMonitor.cpuUsage * 100))%",
+            secondaryText: "Hoạt động \(formatUptime(systemMonitor.systemUptime))",
+            progress: nil,
+            actionTitle: nil,
+            actionColors: []
+        )
+        .frame(minHeight: 104)
+    }
+    
+    private func formatUptime(_ interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        return "\(hours) giờ \(minutes) phút"
     }
 }
 
-// MARK: - Network Widget
 struct NetworkWidget: View {
     @ObservedObject var systemMonitor: SystemMonitorService
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "wifi")
-                    .font(.system(size: 16))
-                Text("Wi-Fi")
-                    .font(.system(size: 12, weight: .medium))
-                Spacer()
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 8))
-                    Text(systemMonitor.formatSpeed(systemMonitor.uploadSpeed))
-                        .font(.system(size: 10))
-                }
-                HStack {
-                    Image(systemName: "arrow.down")
-                        .font(.system(size: 8))
-                    Text(systemMonitor.formatSpeed(systemMonitor.downloadSpeed))
-                        .font(.system(size: 10))
-                }
-            }
-            
-            HStack {
-                Spacer()
-                Text("Đo tốc độ")
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-            }
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: "wifi",
+            title: "Wi-Fi",
+            primaryText: "Lưu lượng thời gian thực",
+            secondaryText: "↑ \(systemMonitor.formatSpeed(systemMonitor.uploadSpeed))   ↓ \(systemMonitor.formatSpeed(systemMonitor.downloadSpeed))",
+            progress: nil,
+            actionTitle: nil,
+            actionColors: []
+        )
+        .frame(minHeight: 104)
     }
 }
 
-// MARK: - Connected Devices Widget (Placeholder)
 struct ConnectedDevicesWidget: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Thiết bị đã kết nối")
-                .font(.system(size: 12, weight: .medium))
-            
-            Text("Chưa có thiết bị nào được kết nối")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .menuBarWidgetStyle()
+        MenuBarMetricCard(
+            icon: "display.2",
+            title: "Thiết bị kết nối",
+            primaryText: "1 thiết bị",
+            secondaryText: "Menu bar MacOptimizer đang hoạt động",
+            progress: nil,
+            actionTitle: nil,
+            actionColors: []
+        )
+        .frame(minHeight: 104)
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarCustomizationView: View {
     @ObservedObject var manager: MenuBarManager
     @ObservedObject private var systemMonitor: SystemMonitorService
+    @State private var selectedSection: CustomizerSection = .display
     
     private let compactColumns = [GridItem(.adaptive(minimum: 108), spacing: 8)]
     private let sectionTitleFont = Font.system(size: 14, weight: .semibold, design: .rounded)
@@ -19,16 +20,11 @@ struct MenuBarCustomizationView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            sectionPicker
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    previewCard
-                    samplingProfilesCard
-                    samplingIntervalsCard
-                    presetsCard
-                    selectedMetricsCard
-                    availableMetricsCard
-                    optionsCard
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    sectionContent
                 }
                 .padding(16)
             }
@@ -63,6 +59,46 @@ struct MenuBarCustomizationView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+    }
+
+    private var sectionPicker: some View {
+        HStack(spacing: 8) {
+            ForEach(CustomizerSection.allCases) { section in
+                Button(action: {
+                    selectedSection = section
+                }) {
+                    Text(section.title)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(selectedSection == section ? .black.opacity(0.8) : .white.opacity(0.72))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .background(
+                            Capsule()
+                                .fill(selectedSection == section ? Color.white.opacity(0.95) : Color.white.opacity(0.08))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 4)
+    }
+
+    @ViewBuilder
+    private var sectionContent: some View {
+        switch selectedSection {
+        case .display:
+            previewCard
+            presetsCard
+            selectedMetricsCard
+            availableMetricsCard
+        case .sampling:
+            samplingProfilesCard
+            samplingIntervalsCard
+        case .options:
+            customSamplingSummaryCard
+            optionsCard
+        }
     }
     
     private var previewCard: some View {
@@ -206,6 +242,34 @@ struct MenuBarCustomizationView: View {
                     samplingIntervalRow(for: kind)
                 }
             }
+        }
+        .padding(14)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(16)
+    }
+
+    private var customSamplingSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Trạng thái hiện tại")
+                .font(sectionTitleFont)
+                .foregroundColor(.white)
+            
+            HStack(spacing: 10) {
+                Image(systemName: systemMonitor.samplingProfile == .custom ? "slider.horizontal.3" : "waveform.path.ecg")
+                    .foregroundColor(.white.opacity(0.8))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(systemMonitor.samplingProfile.title)
+                        .font(itemTitleFont)
+                        .foregroundColor(.white)
+                    Text(systemMonitor.samplingProfile.subtitle)
+                        .font(secondaryBodyFont)
+                        .foregroundColor(.white.opacity(0.58))
+                }
+                Spacer()
+            }
+            .padding(12)
+            .background(Color.white.opacity(0.08))
+            .cornerRadius(12)
         }
         .padding(14)
         .background(Color.white.opacity(0.05))
@@ -460,6 +524,22 @@ struct MenuBarCustomizationView: View {
             return "Ví dụ: icon + ↓2.4M ↑350K"
         case .battery:
             return "Ví dụ: icon + 82%"
+        }
+    }
+}
+
+private enum CustomizerSection: String, CaseIterable, Identifiable {
+    case display
+    case sampling
+    case options
+    
+    var id: String { rawValue }
+    
+    var title: String {
+        switch self {
+        case .display: return "Hiển thị"
+        case .sampling: return "Lấy mẫu"
+        case .options: return "Khác"
         }
     }
 }

@@ -1,0 +1,20 @@
+{
+  "task": "app-design-style-guide",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/Styles.swift",
+    "AppUninstaller/ContentView.swift",
+    "AppUninstaller/NavigationSidebar.swift",
+    "AppUninstaller/MenuBar/MenuBarManager.swift",
+    "DESIGN.md"
+  ],
+  "goal": [
+    "Tạo file mô tả phong cách thiết kế hiện tại của app",
+    "Ghi lại palette, gradient, bố cục, sidebar, card và menu bar style",
+    "Dùng code hiện tại làm nguồn tham chiếu để các thay đổi UI sau này bám đúng visual language"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Đây là thay đổi tài liệu, không cần build nếu không có thay đổi code."
+  ]
+}

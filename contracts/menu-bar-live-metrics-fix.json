@@ -1,0 +1,17 @@
+{
+  "task": "menu-bar-live-metrics-fix",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/SystemMonitorService.swift",
+    "AppUninstaller/MenuBar/MenuBarManager.swift"
+  ],
+  "goal": [
+    "Khôi phục việc cập nhật realtime cho Pin và Wi-Fi trong popup menu bar",
+    "Bật lấy mẫu cho các widget overview khi popup menu bar đang mở",
+    "Giữ việc tắt timer khi popup đóng để không tốn tài nguyên nền"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

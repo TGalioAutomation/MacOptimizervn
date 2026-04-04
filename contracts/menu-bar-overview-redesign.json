@@ -1,0 +1,18 @@
+{
+  "task": "menu-bar-overview-redesign",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/MenuBar/MenuBarView.swift",
+    "AppUninstaller/MenuBar/MenuBarWidgets.swift"
+  ],
+  "goal": [
+    "Thiết kế lại overview popup của menu bar theo mockup tham chiếu",
+    "Đưa các widget về phong cách glass card đậm, có hierarchy rõ và CTA nổi bật",
+    "Giữ các hành động chính của menu bar hoạt động được",
+    "Build lại app sau khi chỉnh"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "task": "menu-bar-detail-window-position-fix",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/MenuBar/MenuBarManager.swift"
+  ],
+  "goal": [
+    "Sửa vị trí popup detail của menu bar để không bị tràn khỏi màn hình khi mở Cài đặt",
+    "Ưu tiên mở bên trái popup chính, nhưng tự chuyển sang bên phải nếu không đủ chỗ",
+    "Giữ cửa sổ detail luôn nằm trọn trong visibleFrame của màn hình"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

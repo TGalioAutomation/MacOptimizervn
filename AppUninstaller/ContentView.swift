@@ -2,6 +2,10 @@ import SwiftUI
 import AppKit
 import AVKit
 
+extension Notification.Name {
+    static let macOptimizerOpenModule = Notification.Name("macOptimizerOpenModule")
+}
+
 struct ContentView: View {
     @State private var selectedModule: AppModule = .smartClean
     // @State private var showIntro = false // Video disabled
@@ -13,6 +17,10 @@ struct ContentView: View {
             mainContent
         }
         .frame(minWidth: 1000, minHeight: 700)
+        .onReceive(NotificationCenter.default.publisher(for: .macOptimizerOpenModule)) { notification in
+            guard let module = notification.object as? AppModule else { return }
+            selectedModule = module
+        }
     }
     
     private var mainContent: some View {

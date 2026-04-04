@@ -1,0 +1,18 @@
+{
+  "task": "menu-bar-customization-layout-refresh",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/MenuBar/MenuBarCustomizationView.swift",
+    "AppUninstaller/MenuBar/MenuBarDetailContainer.swift",
+    "AppUninstaller/MenuBar/MenuBarManager.swift"
+  ],
+  "goal": [
+    "Layout lại cửa sổ Tùy chỉnh thanh menu để không bị cảm giác tràn màn hình",
+    "Chia nội dung thành các nhóm gọn hơn thay vì dồn toàn bộ vào một popup dài",
+    "Giữ thao tác cấu hình nhanh và rõ trong không gian popup nhỏ"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

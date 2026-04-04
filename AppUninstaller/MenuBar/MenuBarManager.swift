@@ -53,6 +53,7 @@ public enum MenuBarRoute {
     case battery
     case cpu
     case network
+    case forceQuitApps
     case customization
 }
 
@@ -110,7 +111,7 @@ class MenuBarManager: NSObject, ObservableObject {
         isSetupComplete = true
         
         loadStatusBarPreferences()
-        systemMonitor.configureMenuBarSampling(statusMetrics: selectedStatusMetrics, detailRoute: currentDetailRoute)
+        systemMonitor.configureMenuBarSampling(statusMetrics: selectedStatusMetrics, detailRoute: currentDetailRoute, isMenuBarWindowOpen: isOpen)
         setupStatusItem()
         setupWindow()
         bindStatusBarUpdates()
@@ -157,6 +158,7 @@ class MenuBarManager: NSObject, ObservableObject {
         let window = MenuBarWindow(contentViewController: hostingController)
         self.popoverWindow = window
         window.level = .floating
+        window.setContentSize(NSSize(width: 390, height: 690))
         
         // Khởi tạo bộ điều khiển cảnh báo bộ nhớ
 
@@ -260,25 +262,10 @@ class MenuBarManager: NSObject, ObservableObject {
         self.currentDetailRoute = route
         window.level = .floating
         
-        // Position: Left of Main Window
         if let mainWindow = popoverWindow {
-            let mainFrame = mainWindow.frame
-            let gap: CGFloat = 10
             let detailSize = detailWindowSize(for: route)
-            let detailWidth = detailSize.width
-            let detailHeight = detailSize.height
-            
-            // Should align tops? usually.
-            // Or center vertically relative to main window?
-            // Modern macOS apps usually align top or keep them side-by-side cleanly.
-            // Let's align Tops for better visual consistency.
-            // Main window height is usually dynamic or ~600.
-            
-            let xPos = mainFrame.minX - detailWidth - gap
-            // Align Tops
-            let yPos = mainFrame.maxY - detailHeight
-            
-            window.setFrame(NSRect(x: xPos, y: yPos, width: detailWidth, height: detailHeight), display: true)
+            let targetFrame = detailWindowFrame(relativeTo: mainWindow, detailSize: detailSize)
+            window.setFrame(targetFrame, display: true)
         }
         
         window.alphaValue = 0
@@ -301,25 +288,55 @@ class MenuBarManager: NSObject, ObservableObject {
         
         window.contentViewController = newController
         let detailSize = detailWindowSize(for: route)
-        var frame = window.frame
-        frame.origin.y += frame.height - detailSize.height
-        frame.size = detailSize
-        window.setFrame(frame, display: true, animate: true)
+        if let mainWindow = popoverWindow {
+            let targetFrame = detailWindowFrame(relativeTo: mainWindow, detailSize: detailSize)
+            window.setFrame(targetFrame, display: true, animate: true)
+        }
         currentDetailRoute = route
     }
 
     private func detailWindowSize(for route: MenuBarRoute) -> CGSize {
         switch route {
+        case .forceQuitApps:
+            return CGSize(width: 360, height: 520)
         case .customization:
-            return CGSize(width: 332, height: 560)
+            return CGSize(width: 348, height: 520)
         default:
             return CGSize(width: 360, height: 620)
         }
     }
+
+    private func detailWindowFrame(relativeTo mainWindow: NSWindow, detailSize: CGSize) -> NSRect {
+        let gap: CGFloat = 10
+        let edgePadding: CGFloat = 8
+        let mainFrame = mainWindow.frame
+        let screenFrame = mainWindow.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? mainFrame
+        
+        let preferredLeftX = mainFrame.minX - detailSize.width - gap
+        let preferredRightX = mainFrame.maxX + gap
+        let y = min(
+            max(mainFrame.maxY - detailSize.height, screenFrame.minY + edgePadding),
+            screenFrame.maxY - detailSize.height - edgePadding
+        )
+        
+        let x: CGFloat
+        if preferredLeftX >= screenFrame.minX + edgePadding {
+            x = preferredLeftX
+        } else if preferredRightX + detailSize.width <= screenFrame.maxX - edgePadding {
+            x = preferredRightX
+        } else {
+            x = min(
+                max(screenFrame.minX + edgePadding, preferredLeftX),
+                screenFrame.maxX - detailSize.width - edgePadding
+            )
+        }
+        
+        return NSRect(origin: NSPoint(x: x, y: y), size: detailSize)
+    }
     
     // MARK: - Open Main App
     
-    func openMainApp() {
+    func openMainApp(module: AppModule? = nil) {
         // Close menu bar windows
         closeWindow()
         NSApp.setActivationPolicy(.regular)
@@ -340,18 +357,27 @@ class MenuBarManager: NSObject, ObservableObject {
             if window.contentViewController != nil && window.isVisible == false {
                 window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
+                if let module {
+                    NotificationCenter.default.post(name: .macOptimizerOpenModule, object: module)
+                }
                 return
             }
             
             if window.contentViewController != nil {
                 window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
+                if let module {
+                    NotificationCenter.default.post(name: .macOptimizerOpenModule, object: module)
+                }
                 return
             }
         }
         
         // If no window found, just activate the app (it should open main window automatically)
         NSApp.activate(ignoringOtherApps: true)
+        if let module {
+            NotificationCenter.default.post(name: .macOptimizerOpenModule, object: module)
+        }
     }
 }
 
@@ -458,7 +484,7 @@ extension MenuBarManager {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self = self else { return }
-                self.systemMonitor.configureMenuBarSampling(statusMetrics: self.selectedStatusMetrics, detailRoute: self.currentDetailRoute)
+                self.systemMonitor.configureMenuBarSampling(statusMetrics: self.selectedStatusMetrics, detailRoute: self.currentDetailRoute, isMenuBarWindowOpen: self.isOpen)
                 self.configureDiskRefreshTimer()
                 self.saveStatusBarPreferences()
             }
@@ -477,7 +503,17 @@ extension MenuBarManager {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] route in
                 guard let self = self else { return }
-                self.systemMonitor.configureMenuBarSampling(statusMetrics: self.selectedStatusMetrics, detailRoute: route)
+                self.systemMonitor.configureMenuBarSampling(statusMetrics: self.selectedStatusMetrics, detailRoute: route, isMenuBarWindowOpen: self.isOpen)
+                self.configureDiskRefreshTimer()
+            }
+            .store(in: &cancellables)
+
+        $isOpen
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isOpen in
+                guard let self = self else { return }
+                self.systemMonitor.configureMenuBarSampling(statusMetrics: self.selectedStatusMetrics, detailRoute: self.currentDetailRoute, isMenuBarWindowOpen: isOpen)
                 self.configureDiskRefreshTimer()
             }
             .store(in: &cancellables)
@@ -500,7 +536,7 @@ extension MenuBarManager {
         let interval = max(systemMonitor.storageRefreshInterval, 5)
         diskRefreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            if self.selectedStatusMetrics.contains(.storage) || self.currentDetailRoute == .storage {
+            if self.isOpen || self.selectedStatusMetrics.contains(.storage) || self.currentDetailRoute == .storage {
                 self.diskManager.updateDiskSpace()
                 self.updateStatusItemAppearance()
             }

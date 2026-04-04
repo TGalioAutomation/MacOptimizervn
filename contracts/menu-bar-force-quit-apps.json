@@ -1,0 +1,21 @@
+{
+  "task": "menu-bar-force-quit-apps",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/MenuBar/MenuBarManager.swift",
+    "AppUninstaller/MenuBar/MenuBarDetailContainer.swift",
+    "AppUninstaller/MenuBar/MenuBarView.swift",
+    "AppUninstaller/MenuBar/Details/ForceQuitAppsView.swift",
+    "AppUninstaller/SystemMonitorService.swift"
+  ],
+  "goal": [
+    "Thêm màn trong menu bar để chọn ứng dụng đang chạy và buộc thoát trực tiếp",
+    "Tái sử dụng logic force quit hiện có của SystemMonitorService",
+    "Giữ UI gọn để thao tác nhanh từ menu bar",
+    "Build lại app sau khi chỉnh"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

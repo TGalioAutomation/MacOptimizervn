@@ -525,15 +525,15 @@ class SystemMonitorService: ObservableObject {
         refreshSamplingSchedule(runImmediately: isMonitoring)
     }
     
-    func configureMenuBarSampling(statusMetrics: [MenuBarStatusMetric], detailRoute: MenuBarRoute?) {
+    func configureMenuBarSampling(statusMetrics: [MenuBarStatusMetric], detailRoute: MenuBarRoute?, isMenuBarWindowOpen: Bool) {
         let metricSet = Set(statusMetrics)
         samplingNeeds = SamplingNeeds(
             gpu: metricSet.contains(.gpu),
-            cpu: metricSet.contains(.cpu) || detailRoute == .cpu,
-            memory: metricSet.contains(.memory) || detailRoute == .memory,
-            network: metricSet.contains(.network) || detailRoute == .network,
+            cpu: metricSet.contains(.cpu) || detailRoute == .cpu || isMenuBarWindowOpen,
+            memory: metricSet.contains(.memory) || detailRoute == .memory || isMenuBarWindowOpen,
+            network: metricSet.contains(.network) || detailRoute == .network || isMenuBarWindowOpen,
             networkDetails: detailRoute == .network,
-            battery: metricSet.contains(.battery) || detailRoute == .battery,
+            battery: metricSet.contains(.battery) || detailRoute == .battery || isMenuBarWindowOpen,
             processDetails: detailRoute == .cpu || detailRoute == .memory,
             detailedMemory: detailRoute == .memory,
             batteryDetails: detailRoute == .battery,

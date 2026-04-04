@@ -1,0 +1,18 @@
+{
+  "task": "menu-bar-footer-actions",
+  "date": "2026-04-04",
+  "scope": [
+    "AppUninstaller/ContentView.swift",
+    "AppUninstaller/MenuBar/MenuBarManager.swift",
+    "AppUninstaller/MenuBar/MenuBarView.swift"
+  ],
+  "goal": [
+    "Biến footer menu của popup menu bar thành các shortcut hữu dụng thật",
+    "Cho phép mở app chính tới đúng module mục tiêu từ menu bar",
+    "Giữ các action trong menu bar rõ ràng và đúng ngữ nghĩa"
+  ],
+  "notes": [
+    "Repo không có scripts/agent-search.mjs hay scripts/agent-verify.mjs để chạy workflow tìm kiếm tự động.",
+    "Verification dùng swift build và ./build.sh."
+  ]
+}

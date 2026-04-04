@@ -8,7 +8,7 @@ struct MenuBarDetailContainer: View {
     private var detailSize: CGSize {
         switch route {
         case .customization:
-            return CGSize(width: 332, height: 560)
+            return CGSize(width: 348, height: 520)
         default:
             return CGSize(width: 360, height: 620)
         }
@@ -29,6 +29,8 @@ struct MenuBarDetailContainer: View {
                 CPUDetailView(manager: manager, systemMonitor: systemMonitor)
             case .network:
                 NetworkDetailView(manager: manager, systemMonitor: systemMonitor)
+            case .forceQuitApps:
+                ForceQuitAppsView(manager: manager, systemMonitor: systemMonitor)
             case .customization:
                 MenuBarCustomizationView(manager: manager)
             default:
