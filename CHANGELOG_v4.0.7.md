@@ -28,6 +28,11 @@ Artifact tham chiếu (sau `build_dual_dmg.sh`):
 - `build_release/MacOptimizer_v4.0.7_AppleSilicon.dmg`
 - `build_release/MacOptimizer_v4.0.7_Intel.dmg`
 
+## Bổ sung (SPM resources)
+
+- Khai báo đầy đủ ảnh trong `Package.swift` (deep clean, welcome, `resource/*`, v.v.) để clone repo và `swift build` gói đủ asset trong bundle; bỏ tham chiếu file không có trong repo (`AppIcon_back.icns`, `malware.jpg`).
+- Ba file PNG trùng tên ở root với `resource/` được **exclude** khỏi target để tránh xung đột tên trong bundle — runtime vẫn dùng bản trong thư mục `resource/`.
+
 ## Liên kết phiên bản trước
 
 - [CHANGELOG_v4.0.6.md](CHANGELOG_v4.0.6.md)
