@@ -18,18 +18,19 @@
 
 ## Tổng quan
 
-MacOptimizer là app macOS viết bằng SwiftUI, tập trung vào ba nhóm việc chính:
+MacOptimizer là app macOS viết bằng SwiftUI, tập trung vào bốn nhóm việc chính:
 
 - dọn dẹp rác hệ thống, cache, log và file lớn,
 - gỡ cài đặt app kèm file liên quan,
-- giám sát máy trực tiếp từ menu bar với metric thời gian thực.
+- giám sát máy trực tiếp từ menu bar với metric thời gian thực,
+- quản lý model AI local (Ollama, LM Studio) để kiểm soát dung lượng.
 
 Trạng thái repo hiện tại phản ánh các thay đổi gần đây:
 
 - giao diện chính và các luồng menu bar/monitor đã được Việt hóa diện rộng,
 - status item trên menu bar đã hỗ trợ `GPU`, `CPU`, `DISK`, `RAM`, `Mạng`, `Pin`,
 - tooltip và trang tùy biến status item đã có sẵn,
-- app khởi động ẩn theo kiểu menu bar utility và có thể mở cửa sổ chính khi cần,
+- app chạy dạng utility (`LSUIElement`), mặc định không hiện icon ở Dock và mở cửa sổ chính từ menu bar khi cần,
 - script build nội bộ đã xuất được `.app` và `.dmg`.
 
 Ghi chú: repo vẫn giữ checklist sweep cuối cho việc chuẩn hóa nốt text runtime còn sót trong source ở [contracts/vietnamese-only-sweep-checklist.md](contracts/vietnamese-only-sweep-checklist.md).
@@ -40,13 +41,19 @@ Ghi chú: repo vẫn giữ checklist sweep cuối cho việc chuẩn hóa nốt 
 
 ### Menu bar monitoring
 
-- App khởi động ở chế độ accessory utility và ẩn cửa sổ chính khi mở lần đầu.
+- App chạy ở chế độ utility (`LSUIElement = true`) và không hiện icon ở Dock.
 - Status item hỗ trợ hiển thị động theo lựa chọn người dùng, không còn là text cố định.
 - Có thể bật hoặc tắt từng metric `GPU`, `CPU`, `DISK`, `RAM`, `Mạng`, `Pin`.
 - Có thể hiện hoặc ẩn icon app trên status item.
 - Tooltip được dùng để giải thích metric và trạng thái hiện tại.
 - Trang tùy biến riêng cho menu bar đã có trong nút gear của popup menu bar.
 - Detail `CPU` và `RAM` vẫn giữ luồng force-quit nhanh.
+
+### Quản lý mô hình AI
+
+- Module `Mô hình AI` hỗ trợ quét và quản lý model local từ **Ollama** và **LM Studio**.
+- Có thể xem tổng dung lượng, lọc model, mở vị trí lưu, pull/xóa model (theo provider hỗ trợ).
+- Smart Clean có entry nhanh sang `Mô hình AI` để dọn dung lượng theo tác vụ.
 
 ### Giám sát hệ thống
 
@@ -125,6 +132,7 @@ Ghi chú: repo vẫn giữ checklist sweep cuối cho việc chuẩn hóa nốt 
 | Optimizer | Tối ưu trạng thái hệ thống và mục khởi động |
 | Privacy | Dọn dữ liệu riêng tư trình duyệt và hệ thống |
 | Malware | Quét dấu hiệu rủi ro cơ bản |
+| AI Models | Quản lý model local Ollama/LM Studio |
 | App Updater | Kiểm tra cập nhật ứng dụng |
 | Uninstaller | Gỡ app kèm file liên quan |
 
@@ -181,6 +189,14 @@ Artifact sau build:
 swift build
 ```
 
+### Tái tạo App icon (.icns)
+
+```bash
+./scripts/generate_app_icon.sh
+```
+
+Nguồn icon master: `AppUninstaller/BrandAssets/AppIcon-master-1024.png`.
+
 ---
 
 ## Cấu trúc repo
@@ -196,8 +212,13 @@ MacOptimizervn/
 │   ├── SmartCleanerService.swift
 │   ├── PrivacyScannerService.swift
 │   ├── MalwareScanner.swift
+│   ├── BrandAssets/            # Master brand/icon assets
 │   └── ...
+├── Sources/                    # Shared SPM modules (AIModelKit, verify tool)
+├── Tests/                      # Unit tests
 ├── contracts/                  # Contract và checklist công việc
+├── docs/                       # Technical change logs
+├── scripts/                    # Utility scripts (generate icon, ...)
 ├── build.sh                    # Build cục bộ + DMG
 ├── build_dual_dmg.sh           # DMG Apple Silicon + Intel
 ├── CHANGELOG_v4.0.8.md         # Ghi nhận trạng thái hiện tại
@@ -211,6 +232,7 @@ MacOptimizervn/
 - [CHANGELOG_v4.0.8.md](CHANGELOG_v4.0.8.md)
 - [CHANGELOG_v4.0.7.md](CHANGELOG_v4.0.7.md)
 - [CHANGELOG_v4.0.6.md](CHANGELOG_v4.0.6.md)
+- [docs/audit-2026-04-06.md](docs/audit-2026-04-06.md)
 - [CHANGELOG_v4.0.3.md](CHANGELOG_v4.0.3.md)
 - [CHANGELOG_v4.0.2.md](CHANGELOG_v4.0.2.md)
 - [CHANGELOG_v4.0.1.md](CHANGELOG_v4.0.1.md)
