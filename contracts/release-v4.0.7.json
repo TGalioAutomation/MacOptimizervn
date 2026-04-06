@@ -1,0 +1,14 @@
+{
+  "task": "release-v4.0.7",
+  "created_at": "2026-04-06",
+  "goal": "Commit thay đổi v4.0.7 (AIModelKit, module Mô hình AI, loading chuyển view, build SPM) và tạo tag release.",
+  "scope": [
+    "Bump CFBundleShortVersionString và UI version label",
+    "CHANGELOG_v4.0.7.md và cập nhật README",
+    "Git commit và annotated tag v4.0.7"
+  ],
+  "verification": [
+    "swift build",
+    "./build.sh thành công"
+  ]
+}

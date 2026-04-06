@@ -7,11 +7,22 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "AppUninstaller", targets: ["AppUninstaller"])
+        .executable(name: "AppUninstaller", targets: ["AppUninstaller"]),
+        .executable(name: "AIModelKitVerify", targets: ["AIModelKitVerify"])
     ],
     targets: [
+        .target(
+            name: "AIModelKit",
+            path: "Sources/AIModelKit"
+        ),
+        .executableTarget(
+            name: "AIModelKitVerify",
+            dependencies: ["AIModelKit"],
+            path: "Sources/AIModelKitVerify"
+        ),
         .executableTarget(
             name: "AppUninstaller",
+            dependencies: ["AIModelKit"],
             path: "AppUninstaller",
             exclude: [
                 "Info.plist",
@@ -46,9 +57,7 @@ let package = Package(
         ),
         .testTarget(
             name: "AppUninstallerTests",
-            dependencies: ["AppUninstaller"]
+            dependencies: ["AIModelKit"]
         )
     ]
 )
-
-

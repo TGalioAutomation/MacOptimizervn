@@ -39,6 +39,7 @@ struct SmartCleanerView: View {
     @State private var showScanningTips = false
     @State private var showFailedFilesPopover = false
     @State private var failedFilesClipboardContent: String = ""
+    @EnvironmentObject private var aiModelManager: AIModelManager
     
     // Detail Sheet State
     @State private var showDetailSheet = false
@@ -227,46 +228,207 @@ struct SmartCleanerView: View {
     
     // MARK: - Initial Page (Ready State)
     private var initialPage: some View {
-        VStack {
-            Spacer()
-            
-            // Khu vực biểu tượng cốt lõi - Thiết kế phù hợp (Không có vòng tròn phát sáng)
+        GeometryReader { geometry in
+            let compactHeight = geometry.size.height < 640
+            let compactWidth = geometry.size.width < 920
+            let heroSize = min(
+                compactHeight ? 220 : 320,
+                max(180, geometry.size.width * (compactWidth ? 0.22 : 0.28))
+            )
 
-            ZStack {
-                // Biểu tượng chính của màn hình - sử dụng hình ảnh tùy chỉnh
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: compactHeight ? 16 : 22) {
+                    Spacer(minLength: compactHeight ? 4 : 12)
 
-                if let imagePath = Bundle.main.path(forResource: "welcome", ofType: "png"),
-                   let nsImage = NSImage(contentsOfFile: imagePath) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 360, height: 360)
-                        .shadow(color: Color.pink.opacity(0.2), radius: 20, x: 0, y: 8)
+                    ZStack {
+                        if let imagePath = Bundle.main.path(forResource: "welcome", ofType: "png"),
+                           let nsImage = NSImage(contentsOfFile: imagePath) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: heroSize, height: heroSize)
+                                .shadow(color: Color.pink.opacity(0.2), radius: 20, x: 0, y: 8)
+                        } else {
+                            Image(nsImage: NSApp.applicationIconImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: heroSize * 0.78, height: heroSize * 0.78)
+                                .shadow(color: Color.pink.opacity(0.2), radius: 20, x: 0, y: 8)
+                        }
+                    }
+
+                    VStack(spacing: compactHeight ? 8 : 12) {
+                        Text("Chào mừng đến với MacOptimizer")
+                            .font(.system(size: compactHeight ? 31 : 40, weight: .regular))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+
+                        Text("Bắt đầu quét toàn diện để kiểm tra và dọn máy Mac của bạn.")
+                            .font(.system(size: compactHeight ? 14 : 16))
+                            .foregroundColor(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                    }
+
+                    quickStorageEntryPoints(compactLayout: compactHeight || compactWidth)
+                        .padding(.top, compactHeight ? 8 : 16)
+
+                    Spacer(minLength: compactHeight ? 0 : 8)
+                }
+                .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
+                .padding(.horizontal, compactWidth ? 24 : 36)
+                .padding(.bottom, compactHeight ? 128 : 150)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private func quickStorageEntryPoints(compactLayout: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(spacing: 6) {
+                Text("Mục chiếm dung lượng lớn")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+
+                Text("Đi thẳng vào nơi thường làm đầy ổ đĩa nhanh nhất.")
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.58))
+            }
+
+            Group {
+                if compactLayout {
+                    VStack(spacing: 12) {
+                        storageEntryCard(
+                            icon: "brain.head.profile",
+                            title: "Mô hình AI",
+                            value: aiModelsSummaryValue,
+                            subtitle: aiModelsSummarySubtitle,
+                            gradient: GradientStyles.aiModels,
+                            actionTitle: "Quản lý model",
+                            compactLayout: true
+                        ) {
+                            selectedModule = .aiModels
+                        }
+
+                        storageEntryCard(
+                            icon: "circle.hexagongrid.fill",
+                            title: "Bản đồ dung lượng",
+                            value: "Quét trực quan",
+                            subtitle: "Xem thư mục và tệp nào đang chiếm ổ đĩa nhiều nhất.",
+                            gradient: GradientStyles.spaceLens,
+                            actionTitle: "Mở bản đồ",
+                            compactLayout: true
+                        ) {
+                            selectedModule = .spaceLens
+                        }
+                    }
                 } else {
-                    // Thay thế: Sử dụng biểu tượng ứng dụng
+                    HStack(spacing: 16) {
+                        storageEntryCard(
+                            icon: "brain.head.profile",
+                            title: "Mô hình AI",
+                            value: aiModelsSummaryValue,
+                            subtitle: aiModelsSummarySubtitle,
+                            gradient: GradientStyles.aiModels,
+                            actionTitle: "Quản lý model",
+                            compactLayout: false
+                        ) {
+                            selectedModule = .aiModels
+                        }
 
-                    Image(nsImage: NSApp.applicationIconImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 260, height: 260)
-                        .shadow(color: Color.pink.opacity(0.2), radius: 20, x: 0, y: 8)
+                        storageEntryCard(
+                            icon: "circle.hexagongrid.fill",
+                            title: "Bản đồ dung lượng",
+                            value: "Quét trực quan",
+                            subtitle: "Xem thư mục và tệp nào đang chiếm ổ đĩa nhiều nhất.",
+                            gradient: GradientStyles.spaceLens,
+                            actionTitle: "Mở bản đồ",
+                            compactLayout: false
+                        ) {
+                            selectedModule = .spaceLens
+                        }
+                    }
                 }
             }
-            .padding(.bottom, 60)
-            
-            VStack(spacing: 12) {
-                Text("Chào mừng đến với MacOptimizer")
-                    .font(.system(size: 40, weight: .regular))
-                    .foregroundColor(.white)
-                
-                Text("Bắt đầu quét toàn diện để kiểm tra và dọn máy Mac của bạn.")
-                    .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            .padding(.bottom, 100)
-            
-            Spacer()
         }
+        .frame(maxWidth: compactLayout ? 560 : 760)
+    }
+
+    private var aiModelsSummaryValue: String {
+        let total = aiModelManager.totalManagedSize
+        if total > 0 {
+            return ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
+        }
+        return "Chưa phát hiện"
+    }
+
+    private var aiModelsSummarySubtitle: String {
+        let detectedProviders = aiModelManager.providerStates.values.filter(\.isDetected)
+        if detectedProviders.isEmpty {
+            return "Tự kiểm tra Ollama và LM Studio để biết có model local nào đang chiếm chỗ không."
+        }
+
+        let providerNames = detectedProviders.map(\.provider.rawValue).joined(separator: " + ")
+        return "Đã phát hiện \(providerNames). Mở để xem model nào nặng nhất và xóa nhanh."
+    }
+
+    private func storageEntryCard(
+        icon: String,
+        title: String,
+        value: String,
+        subtitle: String,
+        gradient: LinearGradient,
+        actionTitle: String,
+        compactLayout: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.12))
+                    .frame(width: compactLayout ? 48 : 56, height: compactLayout ? 48 : 56)
+
+                Image(systemName: icon)
+                    .font(.system(size: compactLayout ? 20 : 24, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: compactLayout ? 16 : 18, weight: .bold))
+                    .foregroundColor(.white)
+
+                Text(value)
+                    .font(.system(size: compactLayout ? 20 : 24, weight: .bold))
+                    .foregroundStyle(gradient)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                Text(subtitle)
+                    .font(.system(size: compactLayout ? 11 : 12))
+                    .foregroundColor(.white.opacity(0.65))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(action: action) {
+                Text(actionTitle)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 9)
+                    .background(Color.white.opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(compactLayout ? 16 : 20)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                )
+        )
     }
 
     // MARK: - Scanning Page (3-Column Layout)

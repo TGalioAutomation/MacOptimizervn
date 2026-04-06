@@ -165,6 +165,12 @@ struct GradientStyles {
         endPoint: .bottomTrailing
     )
 
+    static let aiModels = LinearGradient(
+        colors: [Color(hex: "57E8C5"), Color(hex: "5B7BFF")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
     // 13. Chương trình cập nhật (gradient xanh lam/lục lam - kiểu giao diện cập nhật hiện đại)
 
     static let updater = LinearGradient(
@@ -200,6 +206,7 @@ struct GradientStyles {
         case .smartClean: return smartClean
         case .updater: return updater
         case .spaceLens: return spaceLens
+        case .aiModels: return aiModels
         }
     }
 
@@ -318,6 +325,16 @@ struct BackgroundStyles {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    static let aiModels = LinearGradient(
+        stops: [
+            .init(color: Color(hex: "08243A"), location: 0.0),
+            .init(color: Color(hex: "141B39"), location: 0.55),
+            .init(color: Color(hex: "1B1748"), location: 1.0)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
     
 
 
@@ -428,6 +445,7 @@ enum AppModule: String, CaseIterable, Identifiable {
     case largeFiles = "Tệp lớn"
     case fileExplorer = "Quản lý tệp"
     case spaceLens = "Bản đồ dung lượng"
+    case aiModels = "Mô hình AI"
     case uninstaller = "Gỡ cài đặt ứng dụng"
     case updater = "Cập nhật ứng dụng"
     case trash = "Thùng rác"
@@ -448,6 +466,7 @@ enum AppModule: String, CaseIterable, Identifiable {
         case .largeFiles: return "doc"
         case .fileExplorer: return "folder" // Changed icon for File Management
         case .spaceLens: return "circle.hexagongrid" // Space Lens icon
+        case .aiModels: return "brain.head.profile"
         case .trash: return "trash"
         case .malware: return "exclamationmark.shield.fill"
         case .privacy: return "hand.raised.fill"
@@ -467,6 +486,7 @@ enum AppModule: String, CaseIterable, Identifiable {
         case .largeFiles: return GradientStyles.largeFiles
         case .fileExplorer: return GradientStyles.fileExplorer
         case .spaceLens: return GradientStyles.spaceLens // New Gradient
+        case .aiModels: return GradientStyles.aiModels
         case .trash: return GradientStyles.trash
         case .malware: return LinearGradient(colors: [Color(hex: "FF6B6B"), Color(hex: "FF8E53")], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .privacy:
@@ -488,6 +508,7 @@ enum AppModule: String, CaseIterable, Identifiable {
         case .largeFiles: return BackgroundStyles.largeFiles
         case .fileExplorer: return BackgroundStyles.fileExplorer
         case .spaceLens: return BackgroundStyles.spaceLens // New Background
+        case .aiModels: return BackgroundStyles.aiModels
         case .trash: return BackgroundStyles.trash
         case .malware: return LinearGradient(stops: [
             .init(color: Color(hex: "E05E5E"), location: 0.0),
@@ -511,6 +532,7 @@ enum AppModule: String, CaseIterable, Identifiable {
         case .largeFiles: return "Tìm và dọn các tệp chiếm nhiều dung lượng"
         case .fileExplorer: return "Duyệt và quản lý tệp trên ổ đĩa"
         case .spaceLens: return "So sánh trực quan dung lượng thư mục và tệp để dọn nhanh hơn"
+        case .aiModels: return "Quản lý model Ollama và LM Studio, xem dung lượng và xóa nhanh"
         case .trash: return "Xem và dọn sạch thùng rác"
         case .malware: return "Quét và loại bỏ phần mềm độc hại"
         case .privacy: return "Bảo vệ dữ liệu riêng tư của bạn"

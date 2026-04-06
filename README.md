@@ -8,7 +8,7 @@
   <p>
     <img src="https://img.shields.io/badge/macOS-13%2B-111827?style=for-the-badge&logo=apple&logoColor=white" alt="macOS 13+">
     <img src="https://img.shields.io/badge/Swift-5.9-F97316?style=for-the-badge&logo=swift&logoColor=white" alt="Swift 5.9">
-    <img src="https://img.shields.io/badge/Version-4.0.6-2563EB?style=for-the-badge" alt="Version 4.0.6">
+    <img src="https://img.shields.io/badge/Version-4.0.7-2563EB?style=for-the-badge" alt="Version 4.0.7">
     <img src="https://img.shields.io/badge/UI-Ti%E1%BA%BFng%20Vi%E1%BB%87t-059669?style=for-the-badge" alt="Vietnamese UI">
     <img src="https://img.shields.io/badge/Menu%20Bar-GPU%20%2F%20CPU%20%2F%20DISK%20%2F%20RAM-7C3AED?style=for-the-badge" alt="Menu bar metrics">
   </p>
@@ -58,8 +58,8 @@ Ghi chú: repo vẫn giữ checklist sweep cuối cho việc chuẩn hóa nốt 
 
 - `./build.sh` tạo app bundle cục bộ tại `build/MacOptimizer.app` và DMG tại `build/MacOptimizer.dmg`.
 - `./build_dual_dmg.sh` tạo gói phát hành hai kiến trúc:
-  - `build_release/MacOptimizer_v4.0.6_AppleSilicon.dmg`
-  - `build_release/MacOptimizer_v4.0.6_Intel.dmg`
+  - `build_release/MacOptimizer_v4.0.7_AppleSilicon.dmg`
+  - `build_release/MacOptimizer_v4.0.7_Intel.dmg`
 
 ---
 
@@ -172,8 +172,8 @@ open build/MacOptimizer.app
 
 Artifact sau build:
 
-- `build_release/MacOptimizer_v4.0.6_AppleSilicon.dmg`
-- `build_release/MacOptimizer_v4.0.6_Intel.dmg`
+- `build_release/MacOptimizer_v4.0.7_AppleSilicon.dmg`
+- `build_release/MacOptimizer_v4.0.7_Intel.dmg`
 
 ### Build kiểm tra package
 
@@ -200,7 +200,7 @@ MacOptimizervn/
 ├── contracts/                  # Contract và checklist công việc
 ├── build.sh                    # Build cục bộ + DMG
 ├── build_dual_dmg.sh           # DMG Apple Silicon + Intel
-├── CHANGELOG_v4.0.6.md         # Ghi nhận trạng thái hiện tại
+├── CHANGELOG_v4.0.7.md         # Ghi nhận trạng thái hiện tại
 └── README.md
 ```
 
@@ -208,6 +208,7 @@ MacOptimizervn/
 
 ## Tài liệu liên quan
 
+- [CHANGELOG_v4.0.7.md](CHANGELOG_v4.0.7.md)
 - [CHANGELOG_v4.0.6.md](CHANGELOG_v4.0.6.md)
 - [CHANGELOG_v4.0.3.md](CHANGELOG_v4.0.3.md)
 - [CHANGELOG_v4.0.2.md](CHANGELOG_v4.0.2.md)

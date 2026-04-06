@@ -121,14 +121,14 @@ struct MenuBarView: View {
                 )
                 
                 ProposalCard(
-                    icon: "puzzlepiece.extension.fill",
-                    title: "Quản lý plugin, tiện ích và các tùy chọn của menu bar.",
-                    buttonTitle: "Quản lý",
-                    buttonColors: [Color(hex: "FFBD59"), Color(hex: "FF9A32")],
+                    icon: "brain.head.profile",
+                    title: "Xem model Ollama và LM Studio đang chiếm bao nhiêu GB, rồi xóa nhanh khi cần.",
+                    buttonTitle: "Model AI",
+                    buttonColors: [Color(hex: "7DEBCE"), Color(hex: "4DB7FF")],
                     glowColor: Color(hex: "8D34FF").opacity(0.26),
                     action: {
-                        selectedFooterShortcut = .settings
-                        manager.showDetail(route: .customization)
+                        selectedFooterShortcut = .clean
+                        manager.openMainApp(module: .aiModels)
                     }
                 )
             }
@@ -218,8 +218,9 @@ struct MenuBarView: View {
                 manager.showDetail(route: .customization)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 8)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .menuBarGlassCard(cornerRadius: 24)
     }
 }
@@ -289,16 +290,24 @@ private struct FooterNavItem: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 7) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(isActive ? .white : .white.opacity(0.45))
                 Text(title)
-                    .font(.system(size: 9, weight: isActive ? .semibold : .medium))
+                    .font(.system(size: 10, weight: isActive ? .semibold : .medium))
                     .foregroundColor(isActive ? .white : .white.opacity(0.45))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 72)
+            .contentShape(Rectangle())
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(isActive ? Color.white.opacity(0.08) : Color.clear)
+            )
         }
+        .contentShape(Rectangle())
         .buttonStyle(.plain)
     }
 }

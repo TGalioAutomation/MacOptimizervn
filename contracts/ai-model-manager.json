@@ -1,0 +1,14 @@
+{
+  "task": "ai-model-manager",
+  "created_at": "2026-04-04",
+  "goal": "Thêm module quản lý model AI để giúp người dùng nhìn dung lượng Ollama và LM Studio, mở vị trí lưu, pull model Ollama và xóa nhanh.",
+  "scope": [
+    "Thêm AppModule mới cho quản lý model AI",
+    "Tạo service quét dữ liệu thật từ Ollama CLI và thư mục LM Studio",
+    "Dựng giao diện quản lý dung lượng với thao tác mở thư mục, làm mới, pull và xóa",
+    "Nối module mới vào điều hướng chính"
+  ],
+  "verification": [
+    "swift build thành công"
+  ]
+}

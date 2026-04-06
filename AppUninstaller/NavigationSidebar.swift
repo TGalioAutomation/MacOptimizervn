@@ -23,7 +23,7 @@ enum SidebarSection: String, CaseIterable {
         case .apps:
             return [.uninstaller, .updater]
         case .files:
-            return [.fileExplorer, .spaceLens, .largeFiles, .shredder]
+            return [.fileExplorer, .spaceLens, .aiModels, .largeFiles, .shredder]
         }
     }
 }
@@ -36,141 +36,163 @@ struct NavigationSidebar: View {
     @StateObject private var updateService = UpdateCheckerService.shared
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Khu vực Logo trên cùng (click để kiểm tra cập nhật)
+        ScrollViewReader { proxy in
+            VStack(alignment: .leading, spacing: 0) {
+                // Khu vực Logo trên cùng (click để kiểm tra cập nhật)
 
-            Button(action: {
-                if updateService.hasUpdate {
-                    showUpdatePopup = true
-                }
-            }) {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(red: 0.8, green: 0.2, blue: 0.5), Color(red: 0.5, green: 0.1, blue: 0.6)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                Button(action: {
+                    if updateService.hasUpdate {
+                        showUpdatePopup = true
+                    }
+                }) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.8, green: 0.2, blue: 0.5), Color(red: 0.5, green: 0.1, blue: 0.6)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                            .frame(width: 36, height: 36)
-                        
-                        Image(systemName: "sparkles")
-                            .foregroundColor(.white)
-                            .font(.system(size: 18, weight: .bold))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("MacOptimizer")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                        
-                        // Hiển thị lời nhắc cập nhật phiên bản
-
-                        if updateService.hasUpdate {
-                            Text("Phiên bản mới")
-                                .font(.system(size: 10, weight: .bold))
+                                .frame(width: 36, height: 36)
+                            
+                            Image(systemName: "sparkles")
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.red)
-                                .cornerRadius(8)
-                                .padding(.top, 2)
-                        }
-                    }
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 8)
-            }
-            .buttonStyle(.plain)
-            .sheet(isPresented: $showUpdatePopup) {
-                UpdatePopupView()
-            }
-            
-            // Menu điều hướng được nhóm
-
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 2) {
-                    ForEach(SidebarSection.allCases, id: \.self) { section in
-                        // Tiêu đề nhóm
-
-                        if !section.rawValue.isEmpty {
-                            Text(section.rawValue)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.4))
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                                .padding(.leading, 14)
-                                .padding(.top, section == .cleanup ? 6 : 12)
-                                .padding(.bottom, 2)
+                                .font(.system(size: 18, weight: .bold))
                         }
                         
-                        // các mục được nhóm
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("MacOptimizer")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                            
+                            // Hiển thị lời nhắc cập nhật phiên bản
 
-                        ForEach(section.modules) { module in
-                            SidebarMenuItem(
-                                module: module,
-                                isSelected: selectedModule == module,
-                                action: { selectedModule = module },
-                                localization: localization
-                            )
+                            if updateService.hasUpdate {
+                                Text("Phiên bản mới")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.red)
+                                    .cornerRadius(8)
+                                    .padding(.top, 2)
+                            }
                         }
+                        
+                        Spacer()
                     }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 12)
-            }
-            
-            Spacer()
-            
-            // Thông tin và cài đặt phiên bản dưới cùng
-
-            VStack(spacing: 8) {
-                HStack {
-                    // nút cài đặt
-
-                    Spacer()
-
-                    Button(action: { showSettings = true }) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.7))
-                            .padding(6)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Cài đặt")
+                .buttonStyle(.plain)
+                .sheet(isPresented: $showUpdatePopup) {
+                    UpdatePopupView()
                 }
                 
-                HStack(spacing: 6) {
-                    Text("v4.0.6")
-                        .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.3))
-                    Text("Bản Pro")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.purple, .blue],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                    Spacer()
-                }
-            }
-            .padding(.horizontal, 14)
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            }
-            .padding(.bottom, 12)
-        }
-        .frame(width: 220)
+                // Menu điều hướng được nhóm
 
+                ScrollView(showsIndicators: true) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(SidebarSection.allCases, id: \.self) { section in
+                            // Tiêu đề nhóm
+
+                            if !section.rawValue.isEmpty {
+                                Text(section.rawValue)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.4))
+                                    .textCase(.uppercase)
+                                    .tracking(0.5)
+                                    .padding(.leading, 14)
+                                    .padding(.top, section == .cleanup ? 6 : 12)
+                                    .padding(.bottom, 2)
+                            }
+                            
+                            // các mục được nhóm
+
+                            ForEach(section.modules) { module in
+                                SidebarMenuItem(
+                                    module: module,
+                                    isSelected: selectedModule == module,
+                                    action: { selectedModule = module },
+                                    localization: localization
+                                )
+                                .id(module.rawValue)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 12)
+                }
+                
+                Spacer()
+                
+                // Thông tin và cài đặt phiên bản dưới cùng
+
+                VStack(spacing: 8) {
+                    HStack {
+                        // nút cài đặt
+
+                        Spacer()
+
+                        Button(action: { showSettings = true }) {
+                            Image(systemName: "gearshape")
+                                .font(.system(size: 16))
+                                .foregroundColor(.white.opacity(0.7))
+                                .padding(6)
+                                .background(Color.white.opacity(0.1))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .help("Cài đặt")
+                    }
+                    
+                    HStack(spacing: 6) {
+                        Text("v4.0.7")
+                            .font(.system(size: 10))
+                            .foregroundColor(.white.opacity(0.3))
+                        Text("Bản Pro")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.purple, .blue],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                        Spacer()
+                    }
+                }
+                .padding(.horizontal, 14)
+                .sheet(isPresented: $showSettings) {
+                    SettingsView()
+                }
+                .padding(.bottom, 12)
+            }
+            .frame(width: 220)
+            .onAppear {
+                scrollToSelectedModule(with: proxy, animated: false)
+            }
+            .onChange(of: selectedModule) { _ in
+                scrollToSelectedModule(with: proxy, animated: true)
+            }
+        }
+    }
+
+    private func scrollToSelectedModule(with proxy: ScrollViewProxy, animated: Bool) {
+        let scrollAction = {
+            proxy.scrollTo(selectedModule.rawValue, anchor: .center)
+        }
+
+        if animated {
+            withAnimation(.easeInOut(duration: 0.22)) {
+                scrollAction()
+            }
+        } else {
+            scrollAction()
+        }
     }
 }
 
@@ -198,6 +220,7 @@ struct SidebarMenuItem: View {
         case .largeFiles: return "Tệp lớn / cũ"
         case .fileExplorer: return "Duyệt tệp"
         case .spaceLens: return "Không gian đĩa"
+        case .aiModels: return "Mô hình AI"
         case .trash: return "Thùng rác"
         case .privacy: return "Quyền riêng tư"
         case .malware: return "Quét mã độc"

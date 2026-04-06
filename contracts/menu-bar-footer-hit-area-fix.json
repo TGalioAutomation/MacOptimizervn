@@ -1,0 +1,14 @@
+{
+  "task": "menu-bar-footer-hit-area-fix",
+  "created_at": "2026-04-04",
+  "goal": "Sửa footer menu bar để vùng bấm rộng, không phải click trúng icon, và chỉnh layout dưới cùng chắc hơn.",
+  "scope": [
+    "Mở rộng hit area cho từng mục footer",
+    "Tăng chiều cao item và căn lại khoảng cách icon/text",
+    "Ổn định layout bottom navigation"
+  ],
+  "verification": [
+    "swift build thành công",
+    "./build.sh thành công"
+  ]
+}

@@ -44,23 +44,7 @@ echo -e "${YELLOW}[2/7] Chuẩn bị thư mục build...${NC}"
 rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}/${BUNDLE_NAME}/Contents/MacOS"
 mkdir -p "${BUILD_DIR}/${BUNDLE_NAME}/Contents/Resources"
-SNAPSHOT_DIR="${BUILD_DIR}/swift_sources_snapshot"
-mkdir -p "${SNAPSHOT_DIR}"
 echo -e "${GREEN}✓ Thư mục đã được chuẩn bị xong${NC}"
-
-# Tạo snapshot tĩnh của mã nguồn Swift để tránh lỗi file bị đổi timestamp trong lúc biên dịch
-echo -e "${YELLOW}[2.5/7] Tạo snapshot mã nguồn Swift...${NC}"
-while IFS= read -r -d '' file; do
-    relative_path="${file#${SOURCE_DIR}/}"
-    mkdir -p "${SNAPSHOT_DIR}/$(dirname "${relative_path}")"
-    cp -p "${file}" "${SNAPSHOT_DIR}/${relative_path}"
-done < <(find "${SOURCE_DIR}" -name "*.swift" -print0)
-
-SWIFT_FILES=()
-while IFS= read -r -d '' file; do
-    SWIFT_FILES+=("$file")
-done < <(find "${SNAPSHOT_DIR}" -name "*.swift" -print0)
-echo -e "${GREEN}✓ Đã tạo snapshot gồm ${#SWIFT_FILES[@]} file Swift${NC}"
 
 # 4. Sao chép tài nguyên
 echo -e "${YELLOW}[3/7] Sao chép file tài nguyên...${NC}"
@@ -116,17 +100,22 @@ if [ "$VIDEO_COUNT" -gt 0 ]; then
     echo -e "${GREEN}✓ Đã sao chép ${VIDEO_COUNT} file video${NC}"
 fi
 
-# 5. Biên dịch (Apple Silicon)
-echo -e "${YELLOW}[4/7] Đang biên dịch (Apple Silicon)...${NC}"
+# 5. Biên dịch (Swift Package — bao gồm thư viện AIModelKit)
+echo -e "${YELLOW}[4/7] Đang biên dịch (Swift Package, release)...${NC}"
 
-echo -n "  - Biên dịch arm64... "
-swiftc -O \
-    -target arm64-apple-macos13.0 \
-    -sdk $(xcrun --sdk macosx --show-sdk-path) \
-    -parse-as-library \
-    -o "${BUILD_DIR}/${BUNDLE_NAME}/Contents/MacOS/${EXECUTABLE_NAME}" \
-    "${SWIFT_FILES[@]}"
-echo -e "${GREEN}OK${NC}"
+echo -n "  - swift build -c release ... "
+swift build -c release
+BIN_DIR=$(swift build -c release --show-bin-path)
+cp "${BIN_DIR}/${EXECUTABLE_NAME}" "${BUILD_DIR}/${BUNDLE_NAME}/Contents/MacOS/${EXECUTABLE_NAME}"
+RESOURCE_BUNDLE="${BIN_DIR}/MacOptimizer_AppUninstaller.bundle"
+if [ -d "${RESOURCE_BUNDLE}" ]; then
+    rm -rf "${BUILD_DIR}/${BUNDLE_NAME}/Contents/Resources/MacOptimizer_AppUninstaller.bundle"
+    cp -R "${RESOURCE_BUNDLE}" "${BUILD_DIR}/${BUNDLE_NAME}/Contents/Resources/"
+    echo -e "${GREEN}OK (kèm resource bundle SPM)${NC}"
+else
+    echo -e "${YELLOW}⚠ Không thấy MacOptimizer_AppUninstaller.bundle — chỉ chép binary${NC}"
+    echo -e "${GREEN}OK${NC}"
+fi
 
 # 6. Ký ứng dụng
 echo -e "${YELLOW}[5/7] Ký ứng dụng...${NC}"

@@ -1,0 +1,14 @@
+{
+  "task": "sidebar-auto-scroll-selection",
+  "created_at": "2026-04-04",
+  "goal": "Tự cuộn sidebar tới module đang được mở để người dùng thấy ngay footer menu bar đã điều hướng thành công.",
+  "scope": [
+    "Thêm ScrollViewReader cho NavigationSidebar",
+    "Tự scroll tới selectedModule khi đổi từ menu bar hoặc trong app",
+    "Bật chỉ báo cuộn để người dùng biết sidebar có thể cuộn"
+  ],
+  "verification": [
+    "swift build thành công",
+    "./build.sh thành công"
+  ]
+}

@@ -7,7 +7,11 @@ extension Notification.Name {
 }
 
 struct ContentView: View {
+    @StateObject private var aiModelManager = AIModelManager()
     @State private var selectedModule: AppModule = .smartClean
+    /// Shown while the main panel swaps views after sidebar selection (matches `selectedModule` animation).
+    @State private var isModuleTransitioning = false
+    @State private var moduleTransitionGeneration = 0
     // @State private var showIntro = false // Video disabled
     
     var body: some View {
@@ -17,6 +21,7 @@ struct ContentView: View {
             mainContent
         }
         .frame(minWidth: 1000, minHeight: 700)
+        .environmentObject(aiModelManager)
         .onReceive(NotificationCenter.default.publisher(for: .macOptimizerOpenModule)) { notification in
             guard let module = notification.object as? AppModule else { return }
             selectedModule = module
@@ -42,9 +47,6 @@ struct ContentView: View {
                 // Đúng nội dung
 
                 ZStack {
-                    // Color.clear // Nền của vùng nội dung trong suốt
-
-                    
                     Group {
                         switch selectedModule {
                         case .uninstaller:
@@ -74,6 +76,9 @@ struct ContentView: View {
                         case .spaceLens:
                             SpaceLensView()
                                 .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        case .aiModels:
+                            AIModelsView()
+                                .transition(.opacity.combined(with: .move(edge: .trailing)))
                         case .trash:
                             TrashView()
                                 .transition(.opacity.combined(with: .move(edge: .trailing)))
@@ -95,6 +100,31 @@ struct ContentView: View {
                         }
                     }
                     .animation(.easeInOut(duration: 0.3), value: selectedModule)
+
+                    if isModuleTransitioning {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay {
+                                ProgressView()
+                                    .controlSize(.regular)
+                                    .tint(.white)
+                                    .accessibilityLabel("Loading module")
+                            }
+                            .allowsHitTesting(true)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.15), value: isModuleTransitioning)
+                .onChange(of: selectedModule) { _ in
+                    moduleTransitionGeneration += 1
+                    let token = moduleTransitionGeneration
+                    isModuleTransitioning = true
+                    let duration: TimeInterval = 0.38
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                        if token == moduleTransitionGeneration {
+                            isModuleTransitioning = false
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16)) // Glass Card Background
