@@ -81,16 +81,17 @@ class MenuBarManager: NSObject, ObservableObject {
     private var diskRefreshTimer: Timer?
     private let statusMetricsKey = "MenuBar.StatusMetrics"
     private let statusIconKey = "MenuBar.ShowsStatusIcon"
+    /// Leading mark in the menu bar banner; matches sidebar `AppBrandMark` (SF Symbol).
     private lazy var statusBarIconImage: NSImage? = {
-        if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
-           let customIcon = NSImage(contentsOfFile: iconPath) {
-            customIcon.size = NSSize(width: 18, height: 18)
-            customIcon.isTemplate = true
-            return customIcon
+        let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold, scale: .medium)
+        if let image = NSImage(systemSymbolName: "shield.lefthalf.filled.badge.checkmark", accessibilityDescription: "MacOptimizer")?
+            .withSymbolConfiguration(config) {
+            image.isTemplate = true
+            return image
         }
-        let fallbackIcon = NSImage(systemSymbolName: "macpro.gen3", accessibilityDescription: "MacOptimizer")
-        fallbackIcon?.isTemplate = true
-        return fallbackIcon
+        let fallback = NSImage(systemSymbolName: "macpro.gen3", accessibilityDescription: "MacOptimizer")
+        fallback?.isTemplate = true
+        return fallback
     }()
     
     override init() {
@@ -339,7 +340,8 @@ class MenuBarManager: NSObject, ObservableObject {
     func openMainApp(module: AppModule? = nil) {
         // Close menu bar windows
         closeWindow()
-        NSApp.setActivationPolicy(.regular)
+        // Keep utility behavior: no Dock icon even when opening main window.
+        NSApp.setActivationPolicy(.accessory)
         NSApp.activate(ignoringOtherApps: true)
         
         // Find and show the main window
@@ -689,10 +691,9 @@ extension MenuBarManager {
     }
 
     private func drawStatusBannerIcon(in rect: NSRect) {
-        if let icon = statusBarIconImage?.copy() as? NSImage {
-            icon.isTemplate = false
-            icon.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.95)
-        }
+        guard let icon = statusBarIconImage?.copy() as? NSImage else { return }
+        icon.isTemplate = true
+        icon.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
     }
 
     private func drawStatusBannerText(

@@ -27,6 +27,7 @@ let package = Package(
             exclude: [
                 "Info.plist",
                 "compile_errors.txt",
+                "BrandAssets",
                 "yibiaopan_2026.png",
                 "yinpan_2026.png",
                 "zhiwendunpai_2026.png"

@@ -1,0 +1,15 @@
+{
+  "task": "release-v4.0.8",
+  "created_at": "2026-04-06",
+  "goal": "Phát hành v4.0.8 với AppIcon.icns mới, menu bar mark đồng bộ brand, script generate_app_icon.",
+  "scope": [
+    "AppUninstaller/AppIcon.icns",
+    "AppUninstaller/BrandAssets/",
+    "scripts/generate_app_icon.sh",
+    "MenuBarManager status bar icon"
+  ],
+  "verification": [
+    "swift build",
+    "./scripts/generate_app_icon.sh"
+  ]
+}

@@ -46,21 +46,7 @@ struct NavigationSidebar: View {
                     }
                 }) {
                     HStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color(red: 0.8, green: 0.2, blue: 0.5), Color(red: 0.5, green: 0.1, blue: 0.6)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 36, height: 36)
-                            
-                            Image(systemName: "sparkles")
-                                .foregroundColor(.white)
-                                .font(.system(size: 18, weight: .bold))
-                        }
+                        AppBrandMark(size: 36)
                         
                         VStack(alignment: .leading, spacing: 0) {
                             Text("MacOptimizer")
@@ -150,7 +136,7 @@ struct NavigationSidebar: View {
                     }
                     
                     HStack(spacing: 6) {
-                        Text("v4.0.7")
+                        Text("v4.0.8")
                             .font(.system(size: 10))
                             .foregroundColor(.white.opacity(0.3))
                         Text("Bản Pro")
@@ -193,6 +179,37 @@ struct NavigationSidebar: View {
         } else {
             scrollAction()
         }
+    }
+}
+
+/// Brand mark used in sidebar and compact headers.
+private struct AppBrandMark: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.15, green: 0.70, blue: 1.00),
+                            Color(red: 0.53, green: 0.24, blue: 0.98)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                )
+
+            Image(systemName: "shield.lefthalf.filled.badge.checkmark")
+                .font(.system(size: size * 0.5, weight: .bold))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
+        }
+        .frame(width: size, height: size)
     }
 }
 
